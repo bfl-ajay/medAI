@@ -8,7 +8,11 @@
     "nodemailer": "^8.0.1",
     "pdf-parse": "^1.1.1",
     "pdf2pic": "^3.2.0",
+    "pdfjs-dist": "^3.11.174",
     "sweetalert2": "^11.26.22",
     "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.126"
   }
 }

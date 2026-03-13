@@ -16,7 +16,6 @@
 
     <!-- DRAG & DROP AREA -->
     <label class="file-upload" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-
       <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png">
 
       <p *ngIf="!selectedFile"> <i class="fa-solid fa-paperclip"></i> Click or drag file to upload</p>
@@ -40,7 +39,7 @@
 
 
     <!-- ================= REPORT LIST ================= -->
-    <div  *ngIf="reports.length > 0">
+    <div *ngIf="reports.length > 0">
       <h3><i class="fa-solid fa-file-lines"></i> Your Uploaded Reports</h3>
 
       <div class="report-list">
@@ -75,10 +74,33 @@
           </div>
 
           <!-- ANALYSIS BELOW -->
-          <div *ngIf="reportAnalysisMap[r.id]" class="analysis-box"> 
+          <div *ngIf="reportAnalysisMap[r.id]" class="analysis-box">
 
-            <h4>Extracted Text</h4>
-            <pre class="ocr-text">{{ reportAnalysisMap[r.id].extractedText }}</pre>
+            <h4>Report Type</h4>
+            <p class="report-type">{{ reportAnalysisMap[r.id].reportType }}</p>
+
+            <h4>Key Metrics</h4>
+
+            <div *ngIf="reportAnalysisMap[r.id].metrics" class="metrics-grid">
+
+              <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics">
+
+                <div class="metric-name">
+                  {{ m.name }}
+                </div>
+
+                <div class="metric-value">
+                  {{ m.value }} {{ m.unit }}
+                </div>
+
+                <div class="metric-range">
+                  Range: {{ m.range }}
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
         </div>

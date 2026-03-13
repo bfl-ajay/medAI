@@ -620,3 +620,84 @@
   }
 
 }
+
+/* ===== Metrics Grid ===== */
+
+.metrics-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+  gap: 14px;
+
+  margin-top: 10px;
+
+}
+
+/* ===== Metric Card ===== */
+
+.metric-card {
+
+  background: var(--bg-light);
+
+  border: 1px solid var(--border-color);
+
+  padding: 14px;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  transition: .2s;
+
+}
+
+.metric-card:hover {
+
+  background: white;
+
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-sm);
+
+}
+
+.metric-name {
+
+  font-size: 12px;
+
+  color: var(--text-gray);
+
+  font-weight: 600;
+
+}
+
+.metric-value {
+
+  font-size: 18px;
+
+  font-weight: 800;
+
+  color: var(--primary-blue);
+
+}
+
+.report-type {
+
+  font-weight: 700;
+
+  font-size: 14px;
+
+  color: var(--primary-blue);
+
+}
+
+.metric-range {
+  font-size: 12px;
+  color: var(--text-gray);
+}
