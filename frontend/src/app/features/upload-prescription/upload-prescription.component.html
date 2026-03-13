@@ -1,0 +1,131 @@
+<div class="page-container">
+
+  <!-- ===== HERO (UNCHANGED) ===== -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h1><i class="fa-solid fa-pills"></i> Prescriptions</h1>
+      <p>Upload and manage your prescription files</p>
+    </div>
+
+    <div class="page-hero-icon">
+      <i class="fa-solid fa-folder-open"></i>
+    </div>
+  </div>
+
+
+  <!-- ===== MAIN CONTENT PANEL ===== -->
+  <div class="main-panel">
+    <div class="panel-section page-card">
+
+      <!-- ================= UPLOAD ================= -->
+
+
+      <i class="fa-solid fa-upload"></i>
+      <h2>Upload Prescription</h2>
+
+      <div class="form-group">
+        <label>Doctor Name</label>
+        <input type="text" [(ngModel)]="doctorName" placeholder="Dr. Sharma">
+      </div>
+
+      <div class="form-group">
+        <label>Notes (Optional)</label>
+        <textarea rows="4" [(ngModel)]="prescriptionText" placeholder="Add any details about this prescription...">
+        </textarea>
+      </div>
+
+      <label class="file-upload" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+
+        <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png">
+
+        <p *ngIf="!selectedFile">
+          <i class="fa-solid fa-paperclip"></i>
+          Click or drag prescription file here
+        </p>
+
+        <p *ngIf="selectedFile" class="file-name">
+          <i class="fa-solid fa-circle-check"></i>
+          {{ selectedFile.name }}
+        </p>
+
+      </label>
+
+      <button class="submit-btn" (click)="submit()" [disabled]="!selectedFile">
+
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        Upload Prescription
+
+      </button>
+
+
+
+
+      <!-- ================= PRESCRIPTIONS LIST ================= -->
+      <div *ngIf="prescriptions.length > 0">
+
+        <h3><i class="fa-solid fa-file-medical"></i> Your Prescriptions</h3>
+
+        <div class="report-list">
+
+          <div *ngFor="let p of prescriptions" class="report-item">
+
+            <!-- HEADER ROW (same as reports) -->
+            <div class="report-header">
+
+              <div class="report-info">
+
+                <a [href]="'http://localhost:5000/uploads/prescriptions/' + p.file_path" target="_blank">
+                  {{ p.file_name }}
+                </a>
+
+                <span class="meta">
+                  Doctor: {{ p.doctor_name || 'Not specified' }}
+                </span>
+
+                <span class="date">
+                  {{ p.uploaded_at | date:'medium' }}
+                </span>
+
+              </div>
+
+              <div class="action-buttons">
+
+                <button class="analyze-btn" (click)="analyzePrescription(p.id)">
+                  <i class="fa-solid" [ngClass]="analysisMap[p.id] ? 'fa-eye-slash' : 'fa-microscope'"></i>
+                </button>
+
+                <button class="delete-btn" (click)="deletePrescription(p.id)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="loadingId === p.id" class="analysis-loading">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              Analyzing prescription...
+            </div>
+
+            <!-- Analysis -->
+            <div *ngIf="analysisMap[p.id]" class="analysis-box">
+
+              <h4>Extracted Text</h4>
+
+              <pre class="ocr-text">
+{{ analysisMap[p.id].extractedText }}
+        </pre>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>

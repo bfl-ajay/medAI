@@ -1,0 +1,452 @@
+<div class="container" *ngIf="profile">
+
+  <!-- ===== PAGE HERO ===== -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h1> Welcome back, {{ profile?.name }}!</h1>
+      <p>Here's your health summary for today</p>
+    </div>
+    <div class="page-hero-icon">
+      <i class="fa-solid fa-hospital"></i>
+    </div>
+  </div>
+
+  <!-- ===== STAT CHIPS ===== -->
+  <div class="stat-chips">
+    <div class="stat-chip">
+
+      <div class="stat-chip-icon teal">
+        <i class="fa-solid fa-weight-scale"></i>
+      </div>
+      <div>
+        <div class="stat-chip-value">
+          {{ profile?.bmi | number:'1.1-2' }}
+
+          <span class="bmi-indicator" [ngClass]="getBMIClass(profile?.bmi)">
+            {{ getBMILabel(profile?.bmi) }}
+          </span>
+
+        </div>
+
+        <div class="stat-chip-label">BMI</div>
+      </div>
+
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon green">
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <div>
+        <div class="stat-chip-value">{{ profile?.healthScore }}%</div>
+        <div class="stat-chip-label">Health Score</div>
+      </div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon red">
+        <i class="fa-solid fa-droplet"></i>
+      </div>
+      <div>
+        <div class="stat-chip-value">{{ profile?.bloodGroup }}</div>
+        <div class="stat-chip-label">Blood Group</div>
+      </div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon yellow">
+        <i class="fa-solid fa-cake-candles"></i>
+      </div>
+      <div>
+        <div class="stat-chip-value">{{ profile?.age }}</div>
+        <div class="stat-chip-label">Age</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MEDICAL CONDITIONS CARD ===== -->
+  <div class="patient-card">
+
+    <div class="pc-header">
+      <h2>
+        <i class="fa-solid fa-stethoscope"></i>
+        Medical Profile
+      </h2>
+
+      <button class="pc-edit-btn" (click)="goToProfile()">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+    </div>
+
+    <div class="pc-body">
+
+      <!-- Known Diseases -->
+      <div class="pc-section">
+        <div class="pc-section-title">Known Medical Conditions</div>
+
+        <ng-container *ngIf="profile?.knownDiseases?.length > 0; else noDiseases">
+          <div class="pc-disease-tags">
+            <div class="pc-disease-tag" *ngFor="let disease of profile?.knownDiseases">
+              <span class="tag-dot"></span>
+              {{ disease }}
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #noDiseases>
+          <div class="pc-no-diseases">
+            No known diseases reported
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Lifestyle Risk Radar Chart -->
+      <div class="pc-section">
+
+        <div class="pc-section-title">Lifestyle Health Risk</div>
+
+        <div class="pc-chart-container">
+          <canvas id="riskRadarChart"></canvas>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ===== HEALTH ALERTS & ADDITIONAL INFO ===== -->
+  <div class="card health-info-card" *ngIf="latestInfo">
+
+    <h3>
+      <i class="fa-solid fa-brain"></i>
+      Health Alerts & Information
+    </h3>
+    <div class="info-grid">
+
+      <!-- Emergency Contact -->
+      <div class="info-item emergency" *ngIf="latestInfo.emergency_contact">
+        <div class="info-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="info-content">
+          <div class="info-title">Emergency Contact</div>
+          <div class="info-value">{{ latestInfo.emergency_contact }}</div>
+        </div>
+      </div>
+
+      <!-- Allergies -->
+      <div class="info-item allergy" *ngIf="latestInfo.allergies">
+        <div class="info-icon">
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <div class="info-content">
+          <div class="info-title">Allergy Alert</div>
+          <div class="info-value">{{ latestInfo.allergies }}</div>
+        </div>
+      </div>
+
+      <!-- Medical Notes -->
+      <div class="info-item notes" *ngIf="latestInfo.medical_notes">
+        <div class="info-icon">
+          <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <div class="info-content">
+          <div class="info-title">Medical Notes</div>
+          <div class="info-value">{{ latestInfo.medical_notes }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AI HEALTH ALERTS -->
+    <div class="ai-alerts">
+
+      <div class="ai-alert" *ngIf="profile?.bmi > 25">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        BMI indicates overweight risk. Consider regular exercise.
+      </div>
+
+      <div class="ai-alert" *ngIf="profile?.knownDiseases?.length > 0">
+        <i class="fa-solid fa-stethoscope"></i>
+        {{ profile?.knownDiseases.length }} known condition(s) detected. Maintain regular health monitoring.
+      </div>
+
+      <div class="ai-alert" *ngIf="profile?.healthScore < 70">
+        <i class="fa-solid fa-chart-line"></i>
+        Health score is below optimal. Lifestyle improvements recommended.
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <!-- ===== BLOOD PRESSURE TRACKER ===== -->
+  <div class="card">
+    <h3>
+      <i class="fa-solid fa-heart-pulse"></i>
+      Blood Pressure Tracker
+    </h3>
+    <div class="bp-add-section">
+      <div class="bp-add-input-row">
+        <input type="number" placeholder="Systolic (e.g., 120)" [(ngModel)]="systolic" />
+        <input type="number" placeholder="Diastolic (e.g., 80)" [(ngModel)]="diastolic" />
+        <input type="number" placeholder="Pulse (e.g., 72)" [(ngModel)]="pulse" />
+        <button class="add-bp-btn" (click)="addBP()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+
+    <div *ngIf="getLatestBP()" class="latest-bp-display">
+      <div class="latest-bp-card" [ngClass]="getBPClass(getLatestBP().systolic, getLatestBP().diastolic)">
+        <div class="latest-title">Latest Reading</div>
+        <div class="latest-values">
+          {{ getLatestBP().systolic }}/{{ getLatestBP().diastolic }}
+          <span class="pulse-label">• Pulse {{ getLatestBP().pulse || '-' }}</span>
+        </div>
+        <div class="latest-date">{{ getLatestBP().recorded_at | date:'medium' }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="currentBP.length > 0">
+      <h4>Current Week</h4>
+      <table class="bp-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th *ngFor="let bp of currentBP">{{ bp.recorded_at | date:'shortDate' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Systolic</strong></td>
+            <td *ngFor="let bp of currentBP" [ngClass]="getBPClass(bp.systolic, bp.diastolic)">{{ bp.systolic }}</td>
+          </tr>
+          <tr>
+            <td><strong>Diastolic</strong></td>
+            <td *ngFor="let bp of currentBP" [ngClass]="getBPClass(bp.systolic, bp.diastolic)">{{ bp.diastolic }}</td>
+          </tr>
+          <tr>
+            <td><strong>Pulse</strong></td>
+            <td *ngFor="let bp of currentBP">{{ bp.pulse || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="profile-section">
+      <div class="section-header bp-header">
+        <h3>Blood Pressure History</h3>
+        <div class="bp-controls">
+        </div>
+      </div>
+
+      <div *ngIf="bpRecords.length === 0" class="empty-state">
+        No blood pressure records yet
+      </div>
+      <!-- LATEST 3 TABLE -->
+      <table class="bp-table" *ngIf="bpRecords.length > 0">
+        <tr>
+          <th>Date</th>
+          <th>Systolic</th>
+          <th>Diastolic</th>
+          <th>Pulse</th>
+        </tr>
+        <tr *ngFor="let bp of bpRecords.slice(0,3)" [ngClass]="getBPClass(bp.systolic, bp.diastolic)">
+          <td>{{ bp.recorded_at | date:'mediumDate' }}</td>
+          <td>{{ bp.systolic }}</td>
+          <td>{{ bp.diastolic }}</td>
+          <td>{{ bp.pulse || '-' }}</td>
+        </tr>
+      </table>
+
+      <!-- CHART -->
+      <div class="section-header bp-header">
+        <h3>Blood Pressure History</h3>
+        <div class="bp-controls">
+        </div>
+      </div>
+      <select [(ngModel)]="selectedMonth" (change)="filterByMonth()" class="month-dropdown">
+
+        <option *ngFor="let m of availableMonths" [value]="m">
+          {{ formatMonth(m) }}
+        </option>
+      </select>
+      <div class="bp-chart-wrapper">
+        <canvas id="bpChart"></canvas>
+      </div>
+
+    </div>
+    <div *ngIf="currentBP.length !== 0">
+      <p>No blood pressure readings yet. Add your first reading above!</p>
+    </div>
+  </div>
+
+  <!-- ===== HEALTH SCORE ===== -->
+  <div class="card">
+    <h3>
+      <i class="fa-solid fa-star"></i>
+      Health Score
+    </h3>
+    <div class="progress">
+      <div class="progress-bar" [style.width.%]="profile?.healthScore">
+        {{ profile?.healthScore }}%
+      </div>
+    </div>
+    <p>
+      <strong>Score Breakdown:</strong><br>
+      Your health score is based on BMI, known diseases, and blood pressure readings.
+    </p>
+  </div>
+
+  <!-- ===== AI DIET & WORKOUT PLAN ===== -->
+  <div class="card">
+    <div>
+      <h3>
+        <i class="fa-solid fa-robot"></i>
+        AI-Powered Health Plan
+      </h3> <button class="default-btn" (click)="getPlan()">Generate Plan</button>
+    </div>
+    <div *ngIf="aiPlan" class="ai-output-grid">
+      <div class="plan-card">
+        <h4><i class="fa-solid fa-utensils"></i> Meal Plan</h4>
+        <ul>
+          <li *ngFor="let meal of aiPlan.mealPlan">
+            <strong>{{ meal.title }}</strong><br>
+            <small>⏱ {{ meal.readyInMinutes }} mins</small><br>
+            <a [href]="meal.sourceUrl" target="_blank">→ View Recipe</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="plan-card" *ngIf="aiPlan.avoidFoods?.length">
+        <h4><i class="fa-solid fa-ban"></i> Foods to Avoid</h4>
+        <ul>
+          <li *ngFor="let item of aiPlan.avoidFoods">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="plan-card">
+        <h4> <i class="fa-solid fa-dumbbell"></i> Workout Plan</h4>
+        <div *ngFor="let exercise of aiPlan?.workoutPlan" class="exercise-item">
+          <strong>{{ exercise?.name }}</strong>
+          <div [innerHTML]="exercise.description"></div>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <h4> <i class="fa-solid fa-lightbulb"></i> Health Insights</h4>
+        <ul>
+          <li *ngFor="let insight of aiPlan.healthInsights">{{ insight }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div *ngIf="!aiPlan">
+      <p>Click "Generate Plan" to get your personalized AI health recommendations</p>
+    </div>
+  </div>
+
+  <!-- ===== PRESCRIPTIONS ===== -->
+  <div class="card">
+    <h3> <i class="fa-solid fa-file-medical"></i> Your Prescriptions</h3>
+
+    <div *ngIf="prescriptions.length > 0; else noPrescriptions">
+      <div *ngFor="let p of prescriptions" class="prescription-row">
+        <span class="prescription-name" [title]="p.file_name">
+          {{ p.file_name }}</span>
+        <div>
+          <button class="default-btn" (click)="togglePrescriptionMedicines(p.id)">
+
+            <ng-container *ngIf="selectedPrescriptionId === p.id; else viewBtn">
+              <i class="fa-solid fa-eye-slash"></i>
+            </ng-container>
+
+            <ng-template #viewBtn>
+              <i class="fa-solid fa-eye"></i>
+            </ng-template>
+
+          </button>
+
+          <span *ngIf="analyzedPrescriptionId === p.id">
+
+            <span *ngIf="arePrescriptionRemindersAdded(p.id)">
+              <i class="fa-solid fa-circle-check"></i> Reminders Added
+            </span>
+
+            <span *ngIf="!areAllMedicinesAdded()">
+              <i class="fa-solid fa-triangle-exclamation"></i> Incomplete
+            </span>
+
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noPrescriptions>
+      <p>No prescriptions uploaded yet.</p>
+    </ng-template>
+  </div>
+
+  <!-- ===== MEDICINE REMINDER ===== -->
+  <div class="card">
+    <h3> <i class="fa-solid fa-bell"></i>
+      Medicine Reminder</h3>
+
+    <div *ngIf="medicines.length > 0">
+      <div *ngFor="let med of medicines">
+        <div *ngFor="let time of med.times" class="prescription-row">
+          <div>
+            <strong>{{ med.name }}</strong><br>
+            <small>{{ med.dosage }} • {{ time }}</small>
+          </div>
+          <button [disabled]="isReminderAdded(med, time)"
+            [ngClass]="{ 'added-btn': isReminderAdded(med, time), 'default-btn': !isReminderAdded(med, time) }"
+            (click)="addReminder(med, time)">
+
+            <ng-container *ngIf="isReminderAdded(med, time); else addBtn">
+              <i class="fa-solid fa-circle-check"></i>
+            </ng-container>
+
+            <ng-template #addBtn>
+              <i class="fa-solid fa-bell"></i>
+            </ng-template>
+
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p>Add Reminder Manually</p>
+      <div class="reminder-container">
+        <input [(ngModel)]="medicineName" placeholder="Medicine Name" type="text">
+        <input [(ngModel)]="medicineTime" placeholder="Time" type="time">
+        <button class="default-btn" (click)="setReminder()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+    </div>
+
+    <div class="reminder-list" *ngIf="reminders.length > 0">
+      <p>Your Reminders ({{ reminders.length }})</p>
+      <div class="reminder-item" *ngFor="let r of reminders; let i = index">
+        <div *ngIf="!r.editing" class="reminder-view">
+          <div class="reminder-info">
+            <span class="reminder-name"> {{ r.name }}</span>
+            <span class="reminder-time"> <i class="fa-solid fa-clock"></i> {{ r.time }}</span>
+          </div>
+          <div class="reminder-actions">
+            <button class="edit-btn" (click)="editReminder(i)"> <i class="fa-solid fa-pen"></i></button>
+            <button class="delete-btn" (click)="deleteReminder(i)"> <i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+        <div *ngIf="r.editing" class="reminder-edit">
+          <input [(ngModel)]="r.name" placeholder="Medicine Name">
+          <input type="time" [(ngModel)]="r.time">
+          <button class="save-btn" (click)="saveReminder(i)"> <i class="fa-solid fa-floppy-disk"></i></button>
+          <button class="cancel-btn" (click)="cancelEdit(i)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="reminders.length === 0 && medicines.length === 0">
+      <p>No reminders set. Add medicines from your prescriptions or create custom reminders above.</p>
+    </div>
+  </div>
+
+</div>

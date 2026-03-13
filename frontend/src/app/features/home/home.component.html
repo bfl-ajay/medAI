@@ -1,0 +1,429 @@
+<section id="Home" class="hero">
+
+  <!-- left dots -->
+  <div class="hero-dots hero-dots-left"></div>
+
+  <!-- LEFT CONTENT -->
+  <div class="hero-left">
+
+    <h1>
+      Virtual healthcare <br>
+      for you
+    </h1>
+
+    <p>
+      Trafalgar provides progressive, and affordable healthcare,
+      accessible on mobile and online for everyone
+    </p>
+
+    <button class="hero-btn">
+      Consult today
+    </button>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="hero-right">
+
+    <!-- background blob -->
+    <div class="hero-bg-shape"></div>
+
+
+    <!-- floating plus -->
+    <div class="hero-plus">+</div>
+
+    <!-- right dots -->
+    <div class="hero-dots hero-dots-right"></div>
+
+    <img src="assets/Home_1.png" alt="Healthcare Illustration">
+
+  </div>
+
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section id="Services" class="services-section">
+
+  <div class="services-container">
+
+    <h2 class="services-heading">Our services</h2>
+
+    <div class="services-line"></div>
+
+    <p class="services-sub">
+      We provide to you the best choices for you. Adjust it to your health needs
+      and make sure your undergo treatment with our highly qualified doctors.
+    </p>
+
+    <div class="services-grid">
+
+      <div class="service-card">
+        <i class="fa-solid fa-user-doctor service-icon"></i>
+        <h3>Search doctor</h3>
+        <p>Choose your doctor from thousands of specialist, general and trusted hospitals.</p>
+      </div>
+
+      <div class="service-card">
+        <i class="fa-solid fa-capsules service-icon"></i>
+        <h3>Online pharmacy</h3>
+        <p>Buy your medicines with our mobile application with a simple delivery system.</p>
+      </div>
+
+      <div class="service-card">
+        <i class="fa-solid fa-comments service-icon"></i>
+        <h3>Consultation</h3>
+        <p>Free consultation with our trusted doctors and get the best recommendations.</p>
+      </div>
+
+      <div class="service-card">
+        <i class="fa-solid fa-file-medical service-icon"></i>
+        <h3>Details info</h3>
+        <p>Free consultation with our trusted doctors and get the best recommendations.</p>
+      </div>
+
+      <div class="service-card">
+        <i class="fa-solid fa-truck-medical service-icon"></i>
+        <h3>Emergency care</h3>
+        <p>You can get 24/7 urgent care for yourself or your children and your lovely family.</p>
+      </div>
+
+      <div class="service-card">
+        <i class="fa-solid fa-heart-pulse service-icon"></i>
+        <h3>Tracking</h3>
+        <p>Track and save your medical history and health data.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ================= INFO ================= -->
+
+<section id="Vision" class="info-section">
+  <div class="info-dots info-dots-left"></div>
+  <div class="info-dots info-dots-right"></div>
+  <!-- FIRST BLOCK -->
+  <div class="info-row">
+
+    <div class="info-image">
+      <img src="assets/home_2.png" alt="Healthcare Illustration">
+    </div>
+
+    <div class="info-text">
+
+      <h2>Leading healthcare providers</h2>
+
+      <div class="line"></div>
+
+      <p>
+        Trafalgar provides progressive, and affordable healthcare,
+        accessible on mobile and online for everyone.
+        To us, it’s not just work. We take pride in the solutions we deliver.
+      </p>
+
+      <button class="outline-btn">
+        Learn more
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- SECOND BLOCK -->
+  <div class="info-row reverse">
+
+    <div class="info-text">
+
+      <h2>Download our mobile apps</h2>
+
+      <div class="line"></div>
+
+      <p>
+        Our dedicated patient engagement app and web portal allow you
+        to access information instantaneously (no tedious form,
+        long calls or administrative hassle) and securely.
+      </p>
+
+      <button class="outline-btn">
+        Download
+      </button>
+
+    </div>
+
+    <div class="info-image">
+      <img src="assets/home_2.png" alt="Mobile App Illustration">
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section id="Testimonial" class="testimonial-section">
+
+  <div class="testimonial-wrapper">
+
+    <h2 class="testimonial-title">
+      What our customer are saying
+    </h2>
+
+    <div class="testimonial-carousel">
+
+      <!-- LEFT ARROW -->
+      <button class="carousel-btn left" (click)="scrollLeft()">‹</button>
+
+      <!-- SLIDER -->
+      <div class="carousel-track" #carousel>
+
+        <!-- SLIDE 1 -->
+        <div class="testimonial-card">
+
+          <div class="testimonial-left">
+
+            <div class="testimonial-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+
+            <div>
+              <h4>Edward Newgate</h4>
+              <p>Founder Circle</p>
+            </div>
+
+          </div>
+
+          <div class="testimonial-text">
+            Our dedicated patient engagement app and web portal allow you
+            to access information instantaneously and securely.
+          </div>
+
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="testimonial-card">
+
+          <div class="testimonial-left">
+
+            <div class="testimonial-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+
+            <div>
+              <h4>Sarah Williams</h4>
+              <p>Healthcare Analyst</p>
+            </div>
+
+          </div>
+
+          <div class="testimonial-text">
+            This platform completely simplified how I track prescriptions
+            and communicate with doctors.
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT ARROW -->
+      <button class="carousel-btn right" (click)="scrollRight()">›</button>
+
+    </div>
+
+    <!-- DOTS -->
+    <div class="carousel-dots">
+      <span *ngFor="let dot of [].constructor(totalSlides); let i = index" [class.active]="i === activeIndex"
+        (click)="goToSlide(i)">
+      </span>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="Contact" class="site-section">
+
+  <div class="contact-container">
+
+    <!-- LEFT PANEL -->
+    <div class="contact-info">
+
+      <h3>Contact Information</h3>
+      <p>Say something to start a live chat!</p>
+
+      <div class="info-item">
+        <i class="fa-solid fa-phone"></i>
+        <span>+1012 3456 789</span>
+      </div>
+
+      <div class="info-item">
+        <i class="fa-solid fa-envelope"></i>
+        <span>demo@gmail.com</span>
+      </div>
+
+      <div class="info-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>132 Dartmouth Street Boston,<br>Massachusetts 02156 United States</span>
+      </div>
+
+      <div class="social-icons">
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-discord"></i>
+      </div>
+
+    </div>
+
+
+    <!-- RIGHT PANEL -->
+    <div class="contact-form-wrapper">
+
+      <h2>Contact Us</h2>
+
+      <form class="contact-form" (ngSubmit)="submitContact()">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="name" name="name" required>
+          </div>
+
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastname">
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" name="phone">
+          </div>
+
+        </div>
+
+        <div class="form-group full">
+          <label>Message</label>
+          <textarea [(ngModel)]="message" name="message" required></textarea>
+        </div>
+
+        <button type="submit" class="contact-btn">
+          Send Message
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</section>
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+  <div class="footer-container">
+
+    <!-- BRAND -->
+    <div class="footer-brand">
+
+      <div class="footer-logo">
+        <span class="logo-icon"><i class="fa-solid fa-staff-snake"></i></span>
+        <span class="logo-text">Health Adviser</span>
+      </div>
+
+      <p>
+        Transforming healthcare with smart digital solutions.
+        Track your health, consult doctors, and manage medical
+        records securely from anywhere.
+      </p>
+
+      <div class="footer-social">
+        <i class="fa-brands fa-facebook-f"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-linkedin-in"></i>
+        <i class="fa-brands fa-instagram"></i>
+      </div>
+
+    </div>
+
+
+    <!-- QUICK LINKS -->
+    <div class="footer-links">
+
+      <h4>Quick Links</h4>
+
+      <ul>
+        <li><a href="#Home">Home</a></li>
+        <li><a href="#Services">Services</a></li>
+        <li><a href="#Vision">About Us</a></li>
+        <li><a href="#Testimonial">Testimonials</a></li>
+        <li><a href="#Contact">Contact</a></li>
+      </ul>
+
+    </div>
+
+
+    <!-- SERVICES -->
+    <div class="footer-links">
+
+      <h4>Our Services</h4>
+
+      <ul>
+        <li>Doctor Consultation</li>
+        <li>Health Monitoring</li>
+        <li>Medicine Reminder</li>
+        <li>Medical Records</li>
+        <li>Emergency Support</li>
+        <li>Health Reports</li>
+      </ul>
+
+    </div>
+
+
+    <!-- CONTACT -->
+    <div class="footer-contact">
+
+      <h4>Contact Us</h4>
+
+      <p>
+        <i class="fa-solid fa-location-dot"></i>
+        123 Health Street<br>
+        Pune, India
+      </p>
+
+      <p>
+        <i class="fa-solid fa-envelope"></i>
+        support@healthadviser.com
+      </p>
+
+      <p>
+        <i class="fa-solid fa-phone"></i>
+        +91 98765 43210
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- BOTTOM BAR -->
+  <div class="footer-bottom">
+
+    <p>© 2026 Health Adviser. All rights reserved.</p>
+
+    <div class="footer-policy">
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Cookie Policy</a>
+      <a href="#">Sitemap</a>
+    </div>
+
+  </div>
+
+</footer>

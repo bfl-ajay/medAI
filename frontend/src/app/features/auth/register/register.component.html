@@ -1,0 +1,242 @@
+<div class="register-container">
+  <!-- Background Decorative Elements -->
+  <div class="bg-decoration bg-left"></div>
+  <div class="bg-decoration bg-right"></div>
+
+  <div class="register-wrapper">
+    <!-- Left Side - Form -->
+    <div class="register-left">
+      <!-- Logo/Header
+      <div class="">
+        <div class="logo">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="12" width="24" height="16" rx="2" stroke="#1a7a7a" stroke-width="2"/>
+            <path d="M14 20h12" stroke="#1a7a7a" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="28" cy="16" r="2" fill="#1a7a7a"/>
+          </svg>
+        </div>
+      </div> -->
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step" [class.active]="currentStep === 1">
+          <span class="step-num">1</span>
+          <span class="step-label">Personal Info</span>
+        </div>
+        <div class="step-line" [class.active]="currentStep === 2"></div>
+        <div class="step" [class.active]="currentStep === 2">
+          <span class="step-num">2</span>
+          <span class="step-label">Account</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form #formRef="ngForm" (ngSubmit)="handleSubmit(formRef)">
+
+        <!-- ================= STEP 1 - PERSONAL INFO ================= -->
+        <div class="form-step" [class.active]="currentStep === 1">
+          <h2 class="form-title">Create Account</h2>
+          <p class="form-subtitle">Start your digital health journey</p>
+
+          <div class="form-grid">
+            <!-- Full Name -->
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" [(ngModel)]="name" name="name" placeholder="Enter your full name" required
+                minlength="3" #nameRef="ngModel">
+              <div class="error" *ngIf="nameRef.invalid && nameRef.touched">
+                Name must be at least 3 characters
+              </div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" [(ngModel)]="dob" name="dob" required #dobRef="ngModel">
+              <div class="error" *ngIf="dobRef.invalid && dobRef.touched">
+                Date of birth is required
+              </div>
+            </div>
+
+            <!-- Mobile -->
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="tel" [(ngModel)]="mobile_no" name="mobile_no" placeholder="10-digit number" required
+                pattern="^[0-9]{10}$" #mobileRef="ngModel">
+              <div class="error" *ngIf="mobileRef.invalid && mobileRef.touched">
+                Enter valid 10-digit mobile number
+              </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+              <label>Gender</label>
+              <select [(ngModel)]="gender" name="gender" required #genderRef="ngModel">
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="error" *ngIf="genderRef.invalid && genderRef.touched">
+                Gender is required
+              </div>
+            </div>
+
+            <!-- Height -->
+            <div class="form-group">
+              <label>Height (cm)</label>
+              <input type="number" [(ngModel)]="height" name="height" placeholder="e.g., 170" required min="50"
+                #heightRef="ngModel">
+              <div class="error" *ngIf="heightRef.invalid && heightRef.touched">
+                Enter valid height
+              </div>
+            </div>
+
+            <!-- Weight -->
+            <div class="form-group">
+              <label>Weight (kg)</label>
+              <input type="number" [(ngModel)]="weight" name="weight" placeholder="e.g., 70" required min="10"
+                #weightRef="ngModel">
+              <div class="error" *ngIf="weightRef.invalid && weightRef.touched">
+                Enter valid weight
+              </div>
+            </div>
+
+            <!-- Blood Group -->
+            <div class="form-group">
+              <label>Blood Group</label>
+              <select [(ngModel)]="bloodGroup" name="bloodGroup" required #bloodRef="ngModel">
+                <option value="">Select Blood Group</option>
+                <option *ngFor="let bg of bloodGroups" [value]="bg">{{bg}}</option>
+              </select>
+              <div class="error" *ngIf="bloodRef.invalid && bloodRef.touched">
+                Blood group is required
+              </div>
+            </div>
+
+            <!-- Known Diseases -->
+            <div class="form-group full-width">
+              <label>Known Diseases (Optional)</label>
+
+              <!-- Tags Display -->
+              <div class="tags-container" *ngIf="knownDiseases.length > 0">
+                <div class="tag" *ngFor="let disease of knownDiseases; let i = index">
+                  {{ disease }}
+                  <span class="tag-remove" (click)="removeDisease(i)">×</span>
+                </div>
+              </div>
+
+              <!-- Input -->
+              <div class="disease-input-wrapper">
+                <input type="text" placeholder="Type disease name..." [(ngModel)]="diseaseInput" name="diseaseInput"
+                  (input)="onDiseaseInput()" (keydown.enter)="addDisease($event)">
+              </div>
+
+              <!-- Suggestions Dropdown -->
+              <div class="suggestions" *ngIf="filteredDiseases.length > 0">
+                <div class="suggestion-item" *ngFor="let disease of filteredDiseases" (click)="selectDisease(disease)">
+                  {{ disease.name }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 1 Button -->
+          <button type="button" class="next-btn" (click)="nextStep()" [disabled]="!isStep1Valid()"
+            [class.disabled]="!isStep1Valid()">
+            Continue →
+          </button>
+
+          <!-- Login Link -->
+          <p class="login-link">
+            Already have an account? <a (click)="navigateToLogin()" class="login-redirect">Login here</a>
+          </p>
+        </div>
+
+        <!-- ================= STEP 2 - ACCOUNT ================= -->
+        <div class="form-step" [class.active]="currentStep === 2">
+          <h2 class="form-title">Create Account</h2>
+          <p class="form-subtitle">Set up your login credentials</p>
+
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" [(ngModel)]="email" name="email" placeholder="your@email.com" required email
+              #emailRef="ngModel">
+            <div class="error" *ngIf="emailRef.invalid && emailRef.touched">
+              Enter valid email address
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 characters" required
+              minlength="6" #passwordRef="ngModel">
+            <div class="error" *ngIf="passwordRef.invalid && passwordRef.touched">
+              Minimum 6 characters required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Re-enter password"
+              required #confirmRef="ngModel">
+            <div class="error" *ngIf="confirmPassword !== password && confirmRef.touched">
+              Passwords do not match
+            </div>
+          </div>
+
+          <!-- Step 2 Buttons -->
+          <div class="step-buttons">
+            <button type="button" class="back-btn" (click)="prevStep()">
+              ← Back
+            </button>
+            <button type="submit" class="submit-btn" [disabled]="!isStep2Valid()" [class.disabled]="!isStep2Valid()">
+              Create Account
+            </button>
+          </div>
+
+          <!-- Login Link -->
+          <p class="login-link">
+            Already have an account? <a (click)="navigateToLogin()" class="login-redirect">Login here</a>
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Right Side - Illustration -->
+    <div class="register-right">
+      <svg class="illustration" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Decorative circles -->
+        <circle cx="200" cy="180" r="80" fill="#E9F2FF" opacity="0.6" />
+        <circle cx="180" cy="160" r="60" fill="#458FF6" opacity="0.15" />
+        <circle cx="220" cy="200" r="50" fill="#458FF6" opacity="0.1" />
+
+        <!-- Document -->
+        <rect x="80" y="60" width="140" height="180" rx="8" fill="#ffffff" stroke="#458FF6" stroke-width="2" />
+
+        <!-- Form header -->
+        <line x1="100" y1="90" x2="220" y2="90" stroke="#458FF6" stroke-width="3" stroke-linecap="round" />
+
+        <!-- Form fields -->
+        <line x1="100" y1="115" x2="180" y2="115" stroke="#458FF6" stroke-width="2" opacity="0.4" />
+        <line x1="100" y1="135" x2="200" y2="135" stroke="#458FF6" stroke-width="2" opacity="0.4" />
+        <line x1="100" y1="155" x2="170" y2="155" stroke="#458FF6" stroke-width="2" opacity="0.4" />
+        <line x1="100" y1="175" x2="210" y2="175" stroke="#458FF6" stroke-width="2" opacity="0.4" />
+        <line x1="100" y1="195" x2="185" y2="195" stroke="#458FF6" stroke-width="2" opacity="0.4" />
+
+        <!-- Checkmark -->
+        <circle cx="240" cy="100" r="35" fill="#458FF6" opacity="0.9" />
+        <path d="M230 100 L238 108 L250 96" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"
+          stroke-linejoin="round" />
+
+        <!-- Plant -->
+        <ellipse cx="90" cy="260" rx="30" ry="20" fill="#458FF6" opacity="0.2" />
+        <path d="M80 240Q75 225 70 210" stroke="#458FF6" stroke-width="3" fill="none" stroke-linecap="round" />
+        <path d="M100 240Q105 225 110 210" stroke="#458FF6" stroke-width="3" fill="none" stroke-linecap="round" />
+
+      </svg>
+    </div>
+  </div>
+</div>

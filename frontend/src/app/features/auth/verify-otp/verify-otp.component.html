@@ -1,0 +1,72 @@
+<div class="otp-wrapper">
+
+    <!-- dot decorations -->
+    <div class="bg-decoration bg-left"></div>
+    <div class="bg-decoration bg-right"></div>
+
+    <div class="otp-layout">
+
+        <!-- LEFT SIDE (CARD) -->
+        <div class="otp-card">
+
+            <h2 class="form-title">Verify OTP</h2>
+
+            <p class="otp-sub">
+                Enter the 6 digit code sent to your email
+            </p>
+
+            <div class="otp-inputs">
+
+                <input *ngFor="let box of otpArray; let i = index; trackBy: trackByIndex" type="text" maxlength="1"
+                    [value]="otpArray[i]" (input)="onInput($event, i)" (keydown)="onKeyDown($event, i)" />
+
+            </div>
+
+            <button class="verify-btn" (click)="verifyOTP()">
+                Verify OTP
+            </button>
+
+            <p class="resend">
+                Didn't receive code?
+                <button class="resend-btn" (click)="resendOTP()">Resend</button>
+            </p>
+
+        </div>
+
+
+        <!-- RIGHT SIDE (SVG illustration like register page) -->
+
+        <div class="otp-right">
+
+            <svg class="otp-illustration" viewBox="0 0 300 300" fill="none">
+
+                <!-- decorative circles -->
+                <circle cx="200" cy="180" r="80" fill="#E9F2FF" />
+                <circle cx="180" cy="160" r="60" fill="#458FF6" opacity="0.15" />
+                <circle cx="220" cy="200" r="50" fill="#458FF6" opacity="0.1" />
+
+                <!-- phone -->
+                <rect x="100" y="60" width="100" height="170" rx="18" fill="white" stroke="#458FF6" stroke-width="2" />
+
+                <!-- screen -->
+                <rect x="115" y="80" width="70" height="110" rx="6" fill="#E9F2FF" />
+
+                <!-- OTP dots -->
+                <circle cx="135" cy="120" r="4" fill="#458FF6" />
+                <circle cx="150" cy="120" r="4" fill="#458FF6" />
+                <circle cx="165" cy="120" r="4" fill="#458FF6" />
+                <circle cx="180" cy="120" r="4" fill="#458FF6" />
+
+                <!-- lock icon -->
+                <circle cx="150" cy="200" r="20" fill="#458FF6" />
+
+                <path d="M142 200 L148 206 L160 194" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round" />
+
+            </svg>
+
+        </div>
+
+    </div>
+
+</div>

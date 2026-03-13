@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "axios": "^1.13.5",
+    "chart.js": "^4.5.1",
+    "dotenv": "^17.3.1",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.1",
+    "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.2.0",
+    "sweetalert2": "^11.26.22",
+    "tesseract.js": "^7.0.0"
+  }
+}

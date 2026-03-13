@@ -1,0 +1,88 @@
+<div class="page-container">
+
+  <!-- ===== PAGE HERO ===== -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h1> <i class="fa-solid fa-file-medical"></i> Medical Reports</h1>
+      <p>Upload and analyze your medical test reports</p>
+    </div>
+    <div class="page-hero-icon"><i class="fa-solid fa-file-medical"></i>
+    </div>
+  </div>
+
+  <!-- ================= UPLOAD CARD ================= -->
+  <div class="page-card">
+    <h2>Upload Medical Report</h2>
+
+    <!-- DRAG & DROP AREA -->
+    <label class="file-upload" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png">
+
+      <p *ngIf="!selectedFile"> <i class="fa-solid fa-paperclip"></i> Click or drag file to upload</p>
+      <p *ngIf="selectedFile" class="file-name">
+        <i class="fa-solid fa-circle-check"></i>
+        {{ selectedFile.name }}
+      </p>
+
+    </label>
+
+    <!-- STATUS -->
+    <p *ngIf="uploading" class="status uploading"> <i class="fa-solid fa-spinner fa-spin"></i>
+      Uploading...</p>
+    <p *ngIf="uploadSuccess" class="status success"> <i class="fa-solid fa-circle-check"></i>
+      Upload successful</p>
+
+    <button class="submit-btn" (click)="upload()" [disabled]="!selectedFile || uploading">
+      <i class="fa-solid fa-arrow-up-from-bracket"></i>
+      Upload Report
+    </button>
+
+
+    <!-- ================= REPORT LIST ================= -->
+    <div  *ngIf="reports.length > 0">
+      <h3><i class="fa-solid fa-file-lines"></i> Your Uploaded Reports</h3>
+
+      <div class="report-list">
+        <div *ngFor="let r of reports" class="report-item">
+
+          <!-- HEADER ROW -->
+          <div class="report-header">
+            <div class="report-info">
+              <a [href]="'http://localhost:5000/uploads/reports/' + r.file_path" target="_blank">
+                {{ r.file_name }}
+              </a>
+
+              <span class="date">
+                {{ r.uploaded_at | date:'medium' }}
+              </span>
+            </div>
+
+            <div class="action-buttons">
+              <button class="analyze-btn" (click)="analyzeReport(r.id)">
+                <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'"></i>
+                {{ reportAnalysisMap[r.id] ? '' : '' }}
+              </button>
+
+              <button class="delete-btn" (click)="deleteReport(r.id)"> <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div *ngIf="reportLoadingId === r.id" class="analysis-loading"> <i class="fa-solid fa-spinner fa-spin"></i>
+            Analyzing Report...
+          </div>
+
+          <!-- ANALYSIS BELOW -->
+          <div *ngIf="reportAnalysisMap[r.id]" class="analysis-box"> 
+
+            <h4>Extracted Text</h4>
+            <pre class="ocr-text">{{ reportAnalysisMap[r.id].extractedText }}</pre>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

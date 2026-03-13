@@ -1,0 +1,523 @@
+/* ===== VARIABLES ===== */
+
+:root {
+  --primary-blue: #458FF6;
+  --blue-soft: #E9F2FF;
+  --text-dark: #1a1a1a;
+  --text-gray: #666;
+  --bg-light: #f8fafb;
+}
+
+
+/* ===== WRAPPER ===== */
+
+.otp-wrapper {
+
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 80px 24px;
+
+  background: white;
+
+  position: relative;
+  overflow: hidden;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+
+/* ===== DOT BACKGROUND (same as login/register) ===== */
+
+.otp-wrapper::before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 80px;
+  height: 80px;
+
+  left: -40px;
+  top: 160px;
+
+  background-image: radial-gradient(#bcd3f2 2px, transparent 2px);
+  background-size: 16px 16px;
+
+  animation: dotFloat 10s ease-in-out infinite;
+
+}
+
+.otp-wrapper::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 80px;
+  height: 80px;
+
+  right: -40px;
+  bottom: 120px;
+
+  background-image: radial-gradient(#bcd3f2 2px, transparent 2px);
+  background-size: 16px 16px;
+
+  animation: dotFloat 10s ease-in-out infinite reverse;
+
+}
+
+@keyframes dotFloat {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(20px)
+  }
+}
+
+
+/* ===== CARD ===== */
+
+.otp-card {
+
+  width: 420px;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 20px;
+
+  text-align: center;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, .05);
+
+  animation: slideUp .7s cubic-bezier(.34, 1.56, .64, 1);
+
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ===== TITLE ===== */
+
+.otp-card h2 {
+
+  font-size: 30px;
+  font-weight: 700;
+
+  color: var(--text-dark);
+
+  margin-bottom: 6px;
+
+}
+
+.otp-sub {
+
+  color: var(--text-gray);
+
+  margin-bottom: 30px;
+
+  font-size: 14px;
+
+}
+
+
+/* ===== OTP INPUTS ===== */
+
+.otp-inputs {
+
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+
+  margin-bottom: 25px;
+
+}
+
+.otp-inputs input {
+
+  width: 48px;
+  height: 55px;
+
+  text-align: center;
+
+  font-size: 20px;
+
+  border: none;
+  border-bottom: 2px solid #ddd;
+
+  background: transparent;
+
+  transition: .2s;
+
+}
+
+.otp-inputs input:focus {
+
+  outline: none;
+
+  border-bottom: 2px solid var(--primary-blue);
+
+}
+
+
+/* ===== VERIFY BUTTON (LOGIN STYLE) ===== */
+
+.verify-btn {
+
+  width: 100%;
+
+  border: 2px solid var(--primary-blue);
+  background: transparent;
+
+  color: var(--primary-blue);
+
+  padding: 12px;
+
+  border-radius: 30px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .25s;
+
+  font-size: 15px;
+
+}
+
+.verify-btn:hover {
+
+  background: var(--primary-blue);
+
+  color: white;
+
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 25px rgba(69, 143, 246, .25);
+
+}
+
+
+/* ===== RESEND ===== */
+
+.resend {
+
+  margin-top: 18px;
+
+  font-size: 14px;
+
+  color: var(--text-gray);
+
+}
+
+.resend-btn {
+
+  border: none;
+
+  background: none;
+
+  color: var(--primary-blue);
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  margin-left: 4px;
+
+}
+
+.resend-btn:hover {
+
+  text-decoration: underline;
+
+}
+
+/* ===== PAGE ===== */
+
+.otp-wrapper {
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 80px 24px;
+
+  background: white;
+
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* ===== DOT DECORATION ===== */
+
+.bg-decoration {
+  position: absolute;
+
+  width: 80px;
+  height: 80px;
+
+  background-image: radial-gradient(#bcd3f2 2px, transparent 2px);
+  background-size: 16px 16px;
+
+  animation: dotFloat 10s ease-in-out infinite;
+}
+
+.bg-left {
+  left: -40px;
+  top: 160px;
+}
+
+.bg-right {
+  right: -40px;
+  bottom: 120px;
+}
+
+@keyframes dotFloat {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(20px)
+  }
+}
+
+
+/* ===== MAIN LAYOUT ===== */
+
+.otp-layout {
+
+  max-width: 1200px;
+  margin: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 80px;
+
+}
+
+
+/* ===== OTP CARD ===== */
+
+.otp-card {
+
+  width: 420px;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 20px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, .05);
+
+}
+
+
+/* ===== TITLE ===== */
+
+.form-title {
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.otp-sub {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+
+/* ===== OTP INPUTS ===== */
+
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.otp-inputs input {
+
+  width: 48px;
+  height: 55px;
+
+  text-align: center;
+
+  font-size: 20px;
+
+  border: none;
+  border-bottom: 2px solid #ddd;
+
+  background: transparent;
+
+}
+
+.otp-inputs input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--primary-blue);
+}
+
+
+/* ===== BUTTON ===== */
+
+.verify-btn {
+
+  width: 100%;
+
+  border: 2px solid var(--primary-blue);
+  background: transparent;
+
+  color: var(--primary-blue);
+
+  padding: 12px;
+
+  border-radius: 30px;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: .25s;
+}
+
+.verify-btn:hover {
+
+  background: var(--primary-blue);
+  color: white;
+
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 25px rgba(69, 143, 246, .25);
+
+}
+
+
+/* ===== RESEND ===== */
+
+.resend {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #777;
+}
+
+.resend-btn {
+  border: none;
+  background: none;
+  color: var(--primary-blue);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+/* ===== RIGHT SIDE ===== */
+
+.otp-right {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+
+/* blob background */
+
+.otp-right::before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 560px;
+  height: 360px;
+
+  background: var(--blue-soft);
+
+  border-radius: 50%;
+
+  top: 80px;
+  left: 80px;
+
+  z-index: 1;
+
+  animation: floatBg 8s ease-in-out infinite;
+}
+
+@keyframes floatBg {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(30px)
+  }
+}
+
+
+/* illustration */
+
+.otp-illustration {
+
+  width: 420px;
+  max-width: 100%;
+
+  position: relative;
+  z-index: 2;
+
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(20px)
+  }
+}
+
+
+/* ===== RESPONSIVE ===== */
+
+@media(max-width:900px) {
+
+  .otp-layout {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .otp-card {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .otp-right::before {
+    display: none;
+  }
+
+}
