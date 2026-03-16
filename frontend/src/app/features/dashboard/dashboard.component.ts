@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit {
   selectedMonth: string = 'all';
   availableMonths: string[] = [];
   filteredBPRecords: any[] = [];
+  labMetrics: any = {};
 
   isSidebarOpen = false;
   checkScreen() {
@@ -82,6 +83,28 @@ export class DashboardComponent implements OnInit {
     window.addEventListener('resize', () => this.checkScreen());
 
     this.checkScreen();
+
+    this.authService.getReports().subscribe((reports: any[]) => {
+
+      const allMetrics: any = {};
+
+      reports.forEach((r: any) => {
+
+        if (r.metrics) {
+
+          r.metrics.forEach((m: any) => {
+
+            allMetrics[m.name.toLowerCase()] = m;
+
+          });
+
+        }
+
+      });
+
+      this.labMetrics = allMetrics;
+
+    });
   }
 
   // HEALTH SCORE
@@ -110,7 +133,39 @@ export class DashboardComponent implements OnInit {
     return score;
   }
 
+  calculateLabRisks() {
 
+    const m = this.labMetrics || {};
+
+    let nutritionRisk = 20;
+    let kidneyRisk = 20;
+    let liverRisk = 20;
+    let diabetesRisk = 20;
+
+    if (m["iron"]?.status === "low" || m["vitamin b12"]?.status === "low") {
+      nutritionRisk = 70;
+    }
+
+    if (m["creatinine"]?.status === "high") {
+      kidneyRisk = 80;
+    }
+
+    if (m["sgpt"]?.status === "high" || m["sgot"]?.status === "high") {
+      liverRisk = 80;
+    }
+
+    if (m["glycosylated haemoglobin"]?.status === "high") {
+      diabetesRisk = 85;
+    }
+
+    return {
+      nutritionRisk,
+      kidneyRisk,
+      liverRisk,
+      diabetesRisk
+    };
+
+  }
 
   // AI PLAN
   getPlan() {
@@ -446,7 +501,7 @@ export class DashboardComponent implements OnInit {
   }
 
   createRiskRadarChart() {
-
+    const labRisks = this.calculateLabRisks();
     const bmiRisk = this.profile?.bmi > 30 ? 80 :
       this.profile?.bmi > 25 ? 60 :
         this.profile?.bmi > 18.5 ? 20 : 40;
@@ -468,9 +523,10 @@ export class DashboardComponent implements OnInit {
         labels: [
           'BMI Risk',
           'Disease Risk',
-          'Lifestyle Risk',
-          'Age Risk',
-          'Health Score Risk'
+          'Nutrition Risk',
+          'Kidney Risk',
+          'Diabetes Risk',
+          'Lifestyle Risk'
         ],
 
         datasets: [{
@@ -478,11 +534,11 @@ export class DashboardComponent implements OnInit {
           data: [
             bmiRisk,
             diseaseRisk,
-            lifestyleRisk,
-            ageRisk,
-            healthScoreRisk
+            labRisks.nutritionRisk,
+            labRisks.kidneyRisk,
+            labRisks.diabetesRisk,
+            lifestyleRisk
           ],
-
           backgroundColor: 'rgba(45,159,149,0.2)',
           borderColor: '#2D9F95',
           borderWidth: 2,

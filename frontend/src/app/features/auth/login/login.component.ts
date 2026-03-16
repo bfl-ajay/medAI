@@ -54,7 +54,7 @@ export class LoginComponent {
 
           this.authService.getProfile().subscribe((user: any) => {
 
-            this.authService.setUser(user);  
+            this.authService.setUser(user);
             this.router.navigate(['/dashboard']);
 
           });
@@ -70,7 +70,9 @@ export class LoginComponent {
     });
 
   }
-
+  goToForgotPassword() {
+    this.router.navigate(['/forgot-password']);
+  }
   /**
    * Navigate to register page when Sign Up is clicked
    */

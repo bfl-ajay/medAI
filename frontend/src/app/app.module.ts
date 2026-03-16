@@ -19,6 +19,7 @@ import { UploadPrescriptionComponent } from './features/upload-prescription/uplo
 import { AddInfoComponent } from './features/add-info/add-info.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { VerifyOtpComponent } from './features/auth/verify-otp/verify-otp.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 
 @NgModule({
     declarations: [
@@ -29,21 +30,22 @@ import { VerifyOtpComponent } from './features/auth/verify-otp/verify-otp.compon
         VerifyOtpComponent,
         DashboardComponent,
         NavbarComponent,
-        UploadReportsComponent,       
-        UploadPrescriptionComponent,  
+        UploadReportsComponent,
+        UploadPrescriptionComponent,
         AddInfoComponent,
-        ProfileComponent
+        ProfileComponent,
+        ForgotPasswordComponent
     ],
     imports: [
         BrowserModule,
         FormsModule,
         AppRoutingModule,
-        HttpClientModule, 
+        HttpClientModule,
         RouterModule
     ],
-    providers: [{ 
-        provide: HTTP_INTERCEPTORS, 
-        useClass: AuthInterceptor, 
+    providers: [{
+        provide: HTTP_INTERCEPTORS,
+        useClass: AuthInterceptor,
         multi: true
     }],
     bootstrap: [AppComponent]

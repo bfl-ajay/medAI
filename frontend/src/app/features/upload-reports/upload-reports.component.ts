@@ -154,7 +154,9 @@ export class UploadReportsComponent {
         .replace(/ng\/ml/gi, "ng/mL");
       console.log("FULL OCR TEXT:", fullText);
 
-      const metrics = this.extractMedicalMetrics(fullText);
+      const normalizedText = this.normalizeReportText(fullText);
+
+      const metrics = this.extractMedicalMetrics(normalizedText);
 
       // fetch description for each metric
       const reportType = this.detectReportType(fullText);
@@ -340,22 +342,26 @@ export class UploadReportsComponent {
       if (ignore.some(w => name.toLowerCase().includes(w))) continue;
       const normalizedName = name
         .toLowerCase()
-        .replace(/phosphorous/g, "phosphorus")
         .replace(/serum|plasma/g, "")
+        .replace(/phosphorous/g, "phosphorus")
+        .replace(/bilirubin direct/g, "directbilirubin")
+        .replace(/bilirubin total/g, "totalbilirubin")
         .replace(/[^a-z]/g, "")
         .trim();
+      const exists = metrics.some(m => {
 
-      if (
-        metrics.some(m =>
-          m.name
-            .toLowerCase()
-            .replace(/serum|plasma/g, "")
-            .replace(/[^a-z]/g, "")
-            .trim() === normalizedName
-        )
-      ) {
-        continue;
-      }
+        const existing = m.name
+          .toLowerCase()
+          .replace(/serum|plasma/g, "")
+          .replace(/phosphorous/g, "phosphorus")
+          .replace(/[^a-z]/g, "")
+          .trim();
+
+        return existing === normalizedName;
+
+      });
+
+      if (exists) continue;
       if (
         name.toLowerCase().includes("studies") ||
         name.toLowerCase().includes("picture") ||
@@ -426,11 +432,25 @@ export class UploadReportsComponent {
 
       .trim();
   }
+  normalizeReportText(text: string): string {
 
+    return text
+
+      // split inline tests
+      .replace(/([A-Za-z\s]+)\s+(\d+\.\d+|\d+)\s*(mg\/dL|mmol\/L|ng\/mL|pg\/mL|g\/dL|U\/L|%)/gi,
+        "$1\n$2\n$3")
+
+      // split ranges
+      .replace(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/g,
+        "$1-$2")
+
+      // clean extra spaces
+      .replace(/\s{2,}/g, "\n")
+
+      .trim();
+  }
 
 }
-
-
 
 function getStatus(value: number, range: string) {
 

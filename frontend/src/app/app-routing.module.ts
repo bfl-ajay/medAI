@@ -12,12 +12,14 @@ import { UploadPrescriptionComponent } from './features/upload-prescription/uplo
 import { AddInfoComponent } from './features/add-info/add-info.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { VerifyOtpComponent } from './features/auth/verify-otp/verify-otp.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 
 
 const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
+    { path: 'forgot-password', component: ForgotPasswordComponent },
     { path: 'verify-otp', component: VerifyOtpComponent },
     //{ path: 'proytected', component: DashboardComponent, canActivate: [AuthGuard] },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
@@ -43,6 +45,6 @@ const routerOptions: ExtraOptions = {
             scrollPositionRestoration: 'enabled'
         })
     ],
-     exports: [RouterModule]
+    exports: [RouterModule]
 })
 export class AppRoutingModule { }

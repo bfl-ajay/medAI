@@ -80,12 +80,15 @@ const uploadPhoto = multer({ storage: profileStorage });
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     }
 });
+
 
 router.post('/register', async (req, res) => {
 
@@ -153,7 +156,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-     console.log("LOGIN API HIT");
+    console.log("LOGIN API HIT");
     try {
         const { email, password } = req.body;
 
@@ -1352,6 +1355,107 @@ router.post("/update-2fa", authMiddleware, async (req, res) => {
 
 });
 
+router.post("/verify-forgot-otp", async (req, res) => {
+
+    const { email, otp } = req.body;
+
+    const [users] = await db.execute(
+        "SELECT id FROM users WHERE email=?",
+        [email]
+    );
+
+    if (users.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const userId = users[0].id;
+
+    const [rows] = await db.execute(
+        `SELECT * FROM user_otp
+         WHERE user_id=? AND otp=? AND type='forgot'
+         ORDER BY id DESC
+         LIMIT 1`,
+        [userId, otp]
+    );
+
+    if (rows.length === 0) {
+        return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    res.json({ message: "OTP verified" });
+
+});
+
+router.post("/send-otp", async (req, res) => {
+
+    const { email } = req.body;
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    try {
+
+        // find user
+        const [users] = await db.execute(
+            "SELECT id FROM users WHERE email=?",
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userId = users[0].id;
+
+        // store OTP in DB
+        await db.execute(
+            "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'forgot')",
+            [userId, otp]
+        );
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset OTP",
+            text: `Your OTP is ${otp}`
+        });
+
+        console.log("FORGOT PASSWORD OTP:", otp);
+
+        res.json({ message: "OTP sent" });
+
+    } catch (err) {
+
+        console.error("EMAIL ERROR:", err);
+        res.status(500).json({ message: "Failed to send OTP" });
+
+    }
+
+});
+
+router.post("/reset-password", async (req, res) => {
+
+    const { email, newPassword } = req.body;
+
+    try {
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.execute(
+            "UPDATE users SET password=? WHERE email=?",
+            [hashedPassword, email]
+        );
+
+        res.json({ message: "Password reset successful" });
+
+    } catch (err) {
+
+        console.error("RESET PASSWORD ERROR:", err);
+
+        res.status(500).json({ message: "Server error" });
+
+    }
+
+});
 router.post("/change-password", authMiddleware, async (req, res) => {
 
     try {

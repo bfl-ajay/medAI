@@ -81,6 +81,29 @@ export class AuthService {
     getUser() {
         return JSON.parse(localStorage.getItem('user') || '{}');
     }
+    forgotPassword(email: string) {
+        return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+    }
+    sendOTP(email: string) {
+        return this.http.post(`${this.apiUrl}/send-otp`, { email });
+    }
+    verifyOTP(email: string, otp: string) {
+        return this.http.post('http://localhost:5000/api/auth/verify-forgot-otp', {
+            email,
+            otp
+        });
+    }
+    resetPassword(email: string, newPassword: string) {
+
+        return this.http.post(
+            'http://localhost:5000/api/auth/reset-password',
+            {
+                email: email,
+                newPassword: newPassword
+            }
+        );
+
+    }
 
     // ================= PROFILE =================
 
