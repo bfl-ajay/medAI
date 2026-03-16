@@ -188,6 +188,7 @@ export class UploadReportsComponent {
     for (let i = 0; i < tokens.length; i++) {
 
       let name = tokens[i];
+      if (/page\s*\d+/i.test(name)) continue;
       const sectionHeaders = [
         "chemical test",
         "microscopic test",
@@ -278,7 +279,8 @@ export class UploadReportsComponent {
           unit === "" &&
           /[a-zA-Z%\/³]/.test(t) &&
           !/^\d/.test(t) &&
-          !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(t) // prevents "Gamma GT"
+          !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(t) &&
+          !/gamma|ratio/i.test(t)
         ) {
           unit = t;
           continue;
@@ -338,6 +340,7 @@ export class UploadReportsComponent {
       if (ignore.some(w => name.toLowerCase().includes(w))) continue;
       const normalizedName = name
         .toLowerCase()
+        .replace(/phosphorous/g, "phosphorus")
         .replace(/serum|plasma/g, "")
         .replace(/[^a-z]/g, "")
         .trim();
@@ -423,7 +426,7 @@ export class UploadReportsComponent {
 
       .trim();
   }
-  
+
 
 }
 

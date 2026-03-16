@@ -119,21 +119,12 @@
                   </div>
 
                   <div class="metric-source">
-
-                    <a *ngIf="!m.wikiLoaded" (click)="loadWikiInfo(m)" class="wiki-link">
-
-                      Source: Wikipedia
-                      <i class="fa-solid fa-up-right-from-square"></i>
-
-                    </a>
-
-                    <a *ngIf="m.wikiLoaded" [href]="m.wikiLink" target="_blank">
+                    <a [href]="'https://en.wikipedia.org/wiki/' + (m.name | lowercase)" target="_blank">
 
                       Source: Wikipedia
                       <i class="fa-solid fa-up-right-from-square"></i>
 
                     </a>
-
                   </div>
                 </div>
 
