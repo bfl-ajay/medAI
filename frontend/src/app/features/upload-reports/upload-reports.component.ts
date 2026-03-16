@@ -185,6 +185,7 @@ export class UploadReportsComponent {
     const metrics: any[] = [];
 
     const tokens = text
+      .replace(/\s{2,}/g, '\n')
       .split('\n')
       .map(t => t.trim())
       .filter(t => t.length > 0);
@@ -204,15 +205,25 @@ export class UploadReportsComponent {
       for (let j = i + 1; j < i + 6 && j < tokens.length; j++) {
 
         const t = tokens[j];
+        // skip method lines
+        if (t.toLowerCase().includes("method")) continue;
+        
+        // detect value + unit on same line
+        const valueUnitMatch = t.match(/^(\d+(\.\d+)?)\s*([a-zA-Z%\/³]+)/);
+        if (value === null && valueUnitMatch) {
+          value = parseFloat(valueUnitMatch[1]);
+          unit = valueUnitMatch[3];
+          continue;
+        }
 
         // detect range first
-        if (range === "" && /^\d+\.?\d*\s*-\s*\d+\.?\d*/.test(t)) {
+        if (range === "" && /^\d+(\.\d+)?\s*-\s*\d+(\.\d+)?/.test(t)) {
           range = t;
           continue;
         }
 
         // detect unit
-        if (unit === "" && /^[a-zA-Z%\/³]+$/.test(t)) {
+        if (unit === "" && /[a-zA-Z%\/³]/.test(t) && !/^\d/.test(t)) {
           unit = t;
           continue;
         }
@@ -221,6 +232,7 @@ export class UploadReportsComponent {
         if (/^\d+\.?\d*$/.test(t)) {
           value = parseFloat(t);
         }
+
       }
 
       // must have value + range
