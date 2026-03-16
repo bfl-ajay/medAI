@@ -21,9 +21,6 @@ export class UploadReportsComponent {
   uploadSuccess = false;
   reportAnalysisMap: { [key: number]: any } = {};
   reportLoadingId: number | null = null;
-  activeMetric: any = null;
-  metricWikiLink: string = '';
-  metricInfo: string = '';
   constructor(private authService: AuthService, private alert: AlertService) { }
 
 
@@ -160,9 +157,7 @@ export class UploadReportsComponent {
       const metrics = this.extractMedicalMetrics(fullText);
 
       // fetch description for each metric
-      for (const metric of metrics) {
-        this.fetchMetricInfo(metric);
-      } const reportType = this.detectReportType(fullText);
+      const reportType = this.detectReportType(fullText);
 
       this.reportAnalysisMap[id] = {
         reportType,
@@ -192,7 +187,61 @@ export class UploadReportsComponent {
 
     for (let i = 0; i < tokens.length; i++) {
 
-      const name = tokens[i];
+      let name = tokens[i];
+      const sectionHeaders = [
+        "chemical test",
+        "microscopic test",
+        "physical examination",
+        "lipid profile",
+        "haemogram",
+        "electrolytes",
+        "biochemistry",
+        "department",
+        "investigation",
+        "self pay"
+      ];
+
+      if (sectionHeaders.some(h => name.toLowerCase().includes(h))) continue;
+      const unitTokens = [
+        "ng/ml", "pg/ml", "µg/dl", "mg/dl", "%", "fl", "pg",
+        "cells/ul", "x10³cells/ul", "million/ul", "g/dl",
+        "mmol/l", "mmol/l.", "mmol/l:",
+        "/ul", "mm/hr", "u/l", "iu/ml"
+      ];
+
+      if (unitTokens.includes(name.toLowerCase())) continue;
+      // detect pattern: Test : value unit range
+      const inlineMatch = name.match(
+        /^([A-Za-z\s\(\)\/\-\.,]+)\s*:\s*([\d\.]+)\s*([A-Za-z%\/³]+)\s*([\d\.]+\s*-\s*[\d\.]+)/
+      );
+
+      if (inlineMatch) {
+        const metricName = inlineMatch[1].trim();
+        const value = parseFloat(inlineMatch[2]);
+        const unit = inlineMatch[3];
+        const range = inlineMatch[4];
+
+        metrics.push({
+          name,
+          value,
+          unit,
+          range,
+          status: getStatus(value, range),
+          wikiLoaded: false,
+          wikiLink: ""
+        });
+
+        continue;
+      }
+      const invalidNames = [
+        "clear",
+        "pale yellow",
+        "absent",
+        "present",
+        "normal"
+      ];
+
+      if (invalidNames.includes(name.toLowerCase())) continue;
 
       if (!/[a-zA-Z]{3,}/.test(name)) continue;
 
@@ -207,7 +256,8 @@ export class UploadReportsComponent {
         const t = tokens[j];
         // skip method lines
         if (t.toLowerCase().includes("method")) continue;
-        
+        if (t.toLowerCase().includes("clia")) continue;
+        if (/^[a-zA-Z\/%]+$/.test(name) && tokens[i + 1]?.match(/^\d/)) continue;
         // detect value + unit on same line
         const valueUnitMatch = t.match(/^(\d+(\.\d+)?)\s*([a-zA-Z%\/³]+)/);
         if (value === null && valueUnitMatch) {
@@ -223,11 +273,16 @@ export class UploadReportsComponent {
         }
 
         // detect unit
-        if (unit === "" && /[a-zA-Z%\/³]/.test(t) && !/^\d/.test(t)) {
+        // detect unit but avoid next test name
+        if (
+          unit === "" &&
+          /[a-zA-Z%\/³]/.test(t) &&
+          !/^\d/.test(t) &&
+          !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(t) // prevents "Gamma GT"
+        ) {
           unit = t;
           continue;
         }
-
         // detect numeric value
         if (/^\d+\.?\d*$/.test(t)) {
           value = parseFloat(t);
@@ -239,7 +294,7 @@ export class UploadReportsComponent {
       if (value === null || range === "") continue;
 
       // name should not be long sentence
-      if (name.split(" ").length > 6) continue;
+      if (name.split(" ").length > 10) continue;
 
       // ignore brackets like (CLIA) or (Microscopy)
       if (/^\(.*\)$/.test(name)) continue;
@@ -283,17 +338,21 @@ export class UploadReportsComponent {
       if (ignore.some(w => name.toLowerCase().includes(w))) continue;
       const normalizedName = name
         .toLowerCase()
+        .replace(/serum|plasma/g, "")
         .replace(/[^a-z]/g, "")
         .trim();
 
       if (
         metrics.some(m =>
-          m.name.toLowerCase().replace(/[^a-z]/g, "") === normalizedName
+          m.name
+            .toLowerCase()
+            .replace(/serum|plasma/g, "")
+            .replace(/[^a-z]/g, "")
+            .trim() === normalizedName
         )
       ) {
         continue;
       }
-
       if (
         name.toLowerCase().includes("studies") ||
         name.toLowerCase().includes("picture") ||
@@ -301,8 +360,10 @@ export class UploadReportsComponent {
       ) continue;
 
       // valid lab test name pattern
-      if (!/^[A-Za-z][A-Za-z\s\-\(\),;]+$/.test(name)) continue;
-
+      name = name
+        .replace(/\(.*?\)/g, "")
+        .replace(/,\s*serum/i, "")
+        .trim();
       // reject very long names (comments)
       if (name.length > 40) continue;
       metrics.push({
@@ -342,39 +403,7 @@ export class UploadReportsComponent {
 
   }
 
-  async fetchMetricInfo(metric: any) {
 
-    try {
-
-      const simplified = this.simplifyMetricName(metric.name);
-
-      const searchRes = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${simplified}&format=json&origin=*`
-      );
-
-      const searchData = await searchRes.json();
-
-      if (!searchData.query.search.length) return;
-
-      const title = searchData.query.search[0].title;
-
-      metric.wikiLink =
-        `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
-
-      const summaryRes = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
-      );
-
-      const summaryData = await summaryRes.json();
-
-      metric.description =
-        summaryData.extract?.split(". ")[0] + ".";
-
-    } catch (err) {
-      console.log("Wiki fetch failed", err);
-    }
-
-  }
   simplifyMetricName(name: string): string {
 
     return name
@@ -394,6 +423,7 @@ export class UploadReportsComponent {
 
       .trim();
   }
+  
 
 }
 

@@ -118,18 +118,23 @@
 
                   </div>
 
-                  <div class="metric-description">
-                    {{ m.description }}
-                  </div>
-
                   <div class="metric-source">
-                    Source:
-                    <a [href]="m.wikiLink" target="_blank">
-                      Wikipedia
-                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                  </div>
 
+                    <a *ngIf="!m.wikiLoaded" (click)="loadWikiInfo(m)" class="wiki-link">
+
+                      Source: Wikipedia
+                      <i class="fa-solid fa-up-right-from-square"></i>
+
+                    </a>
+
+                    <a *ngIf="m.wikiLoaded" [href]="m.wikiLink" target="_blank">
+
+                      Source: Wikipedia
+                      <i class="fa-solid fa-up-right-from-square"></i>
+
+                    </a>
+
+                  </div>
                 </div>
 
               </div>
