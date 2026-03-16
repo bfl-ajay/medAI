@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
@@ -15,13 +15,24 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
 
-    // check login
+    this.updateAuthState();
+
+    // update state whenever route changes
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.updateAuthState();
+      }
+    });
+  }
+
+  updateAuthState() {
     this.isLoggedInUser = this.authService.isLoggedIn();
 
     if (this.isLoggedInUser) {
       this.user = this.authService.getUser();
+    } else {
+      this.user = null;
     }
-
   }
 
   logout() {

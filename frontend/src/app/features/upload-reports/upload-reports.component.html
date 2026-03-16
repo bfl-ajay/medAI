@@ -76,7 +76,7 @@
           <!-- ANALYSIS BELOW -->
           <div *ngIf="reportAnalysisMap[r.id]" class="analysis-box">
 
-            <h4>Report Type</h4>
+
             <p class="report-type">{{ reportAnalysisMap[r.id].reportType }}</p>
 
             <h4>Key Metrics</h4>
@@ -85,16 +85,51 @@
 
               <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics">
 
-                <div class="metric-name">
-                  {{ m.name }}
-                </div>
+                <div class="metric-header">
 
-                <div class="metric-value">
-                  {{ m.value }} {{ m.unit }}
-                </div>
+                  <div class="metric-title">
+                    {{ m.name }}
+                  </div>
 
-                <div class="metric-range">
-                  Range: {{ m.range }}
+                  <span class="metric-status" [ngClass]="m.status">
+                    {{ m.status | titlecase }}
+                  </span>
+
+                </div>
+                <!-- INFO CARD (INLINE) -->
+
+                <div class="metric-info-card-inline">
+
+                  <div class="metric-stats">
+
+                    <div class="stat-box">
+                      <span class="label">Your Result</span>
+                      <span class="value">
+                        {{ m.value }} {{ m.unit }}
+                      </span>
+                    </div>
+
+                    <div class="stat-box">
+                      <span class="label">Normal Range</span>
+                      <span class="value">
+                        {{ m.range }}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  <div class="metric-description">
+                    {{ m.description }}
+                  </div>
+
+                  <div class="metric-source">
+                    Source:
+                    <a [href]="m.wikiLink" target="_blank">
+                      Wikipedia
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                  </div>
+
                 </div>
 
               </div>
@@ -107,4 +142,6 @@
       </div>
     </div>
   </div>
+
+
 </div>

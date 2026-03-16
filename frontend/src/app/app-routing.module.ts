@@ -19,12 +19,12 @@ const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'verify-otp', component: VerifyOtpComponent },
-    { path: 'proytected', component: DashboardComponent, canActivate: [AuthGuard] },
+    //{ path: 'proytected', component: DashboardComponent, canActivate: [AuthGuard] },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-    { path: 'profile', component: ProfileComponent },
-    { path: 'upload-reports', component: UploadReportsComponent },
-    { path: 'upload-prescription', component: UploadPrescriptionComponent },
-    { path: 'add-info', component: AddInfoComponent },
+    { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+    { path: 'upload-reports', component: UploadReportsComponent, canActivate: [AuthGuard] },
+    { path: 'upload-prescription', component: UploadPrescriptionComponent, canActivate: [AuthGuard] },
+    { path: 'add-info', component: AddInfoComponent, canActivate: [AuthGuard] },
 
 ];
 

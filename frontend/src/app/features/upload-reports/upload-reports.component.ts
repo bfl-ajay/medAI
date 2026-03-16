@@ -21,7 +21,11 @@ export class UploadReportsComponent {
   uploadSuccess = false;
   reportAnalysisMap: { [key: number]: any } = {};
   reportLoadingId: number | null = null;
+  activeMetric: any = null;
+  metricWikiLink: string = '';
+  metricInfo: string = '';
   constructor(private authService: AuthService, private alert: AlertService) { }
+
 
   ngOnInit() {
     this.loadReports();
@@ -102,33 +106,33 @@ export class UploadReportsComponent {
 
           const page = await pdf.getPage(i);
 
-          const viewport = page.getViewport({ scale: 2 });
+          // const viewport = page.getViewport({ scale: 2 });
 
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
+          // const canvas = document.createElement('canvas');
+          // const context = canvas.getContext('2d');
 
-          if (!context) continue;
+          // if (!context) continue;
 
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+          // canvas.width = viewport.width;
+          // canvas.height = viewport.height;
 
-          await page.render({
-            canvasContext: context,
-            canvas: canvas,
-            viewport: viewport
-          }).promise;
+          // await page.render({
+          //   canvasContext: context,
+          //   // canvas: canvas,
+          //   viewport: viewport
+          // }).promise;
 
-          const imageData = canvas.toDataURL('image/png');
+          // const imageData = canvas.toDataURL('image/png');
 
-          if (!imageData || typeof imageData !== 'string') continue;
+          // if (!imageData || typeof imageData !== 'string') continue;
 
-          const result = await Tesseract.recognize(
-            imageData,
-            'eng',
-            { logger: m => console.log(m) }
-          );
+          const textContent = await page.getTextContent();
 
-          fullText += result.data.text + "\n";
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join('\n');
+
+          fullText += pageText + "\n";
         }
 
       }
@@ -154,7 +158,11 @@ export class UploadReportsComponent {
       console.log("FULL OCR TEXT:", fullText);
 
       const metrics = this.extractMedicalMetrics(fullText);
-      const reportType = this.detectReportType(fullText);
+
+      // fetch description for each metric
+      for (const metric of metrics) {
+        this.fetchMetricInfo(metric);
+      } const reportType = this.detectReportType(fullText);
 
       this.reportAnalysisMap[id] = {
         reportType,
@@ -176,39 +184,121 @@ export class UploadReportsComponent {
 
     const metrics: any[] = [];
 
-    const regex =
-      /([A-Za-z \(\)\/;,-]+?)\s+(\d+\.?\d*)\s*(ng\/mL|pg\/mL|µg\/dL|ug\/dL|mg\/dL|g\/dL|%|mmol\/L|pg\/dL)\s*(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/gi;
+    const tokens = text
+      .split('\n')
+      .map(t => t.trim())
+      .filter(t => t.length > 0);
 
-    let match;
+    for (let i = 0; i < tokens.length; i++) {
 
-    while ((match = regex.exec(text)) !== null) {
+      const name = tokens[i];
 
-      let name = match[1]
-        .replace(/\(.*?\)/g, "")
-        .replace(/serum/gi, "")
-        .replace(/;/g, "")
+      if (!/[a-zA-Z]{3,}/.test(name)) continue;
+
+      if (name.toLowerCase().includes("method")) continue;
+
+      let value: number | null = null;
+      let unit = "";
+      let range = "";
+
+      for (let j = i + 1; j < i + 6 && j < tokens.length; j++) {
+
+        const t = tokens[j];
+
+        // detect range first
+        if (range === "" && /^\d+\.?\d*\s*-\s*\d+\.?\d*/.test(t)) {
+          range = t;
+          continue;
+        }
+
+        // detect unit
+        if (unit === "" && /^[a-zA-Z%\/³]+$/.test(t)) {
+          unit = t;
+          continue;
+        }
+
+        // detect numeric value
+        if (/^\d+\.?\d*$/.test(t)) {
+          value = parseFloat(t);
+        }
+      }
+
+      // must have value + range
+      if (value === null || range === "") continue;
+
+      // name should not be long sentence
+      if (name.split(" ").length > 6) continue;
+
+      // ignore brackets like (CLIA) or (Microscopy)
+      if (/^\(.*\)$/.test(name)) continue;
+
+      // ignore notes/comments words
+      const ignore = [
+        "note",
+        "comment",
+        "management",
+        "deficiency",
+        "disease",
+        "pregnancy",
+        "toxicity"
+      ];
+      const sectionWords = [
+        "note",
+        "notes",
+        "comments",
+        "decreased levels",
+        "increased levels",
+        "management",
+        "deficiency",
+        "disease",
+        "pregnancy",
+        "toxicity"
+      ];
+      const unitLike = [
+        "ng/ml",
+        "pg/ml",
+        "µg/dl",
+        "mg/dl",
+        "%",
+        "fl",
+        "pg",
+        "cells/ul"
+      ];
+
+      if (unitLike.includes(name.toLowerCase())) continue;
+      if (sectionWords.some(w => name.toLowerCase().includes(w))) continue;
+
+      if (ignore.some(w => name.toLowerCase().includes(w))) continue;
+      const normalizedName = name
+        .toLowerCase()
+        .replace(/[^a-z]/g, "")
         .trim();
 
-      let value = match[2];
-      let unit = match[3];
-      let range = match[4] + " - " + match[5];
+      if (
+        metrics.some(m =>
+          m.name.toLowerCase().replace(/[^a-z]/g, "") === normalizedName
+        )
+      ) {
+        continue;
+      }
 
-      // Fix OCR unit mistakes
-      if (unit === "g/dL") unit = "µg/dL";
-      if (unit === "ug/dL") unit = "µg/dL";
-      if (unit === "pg/dL") unit = "µg/dL";
+      if (
+        name.toLowerCase().includes("studies") ||
+        name.toLowerCase().includes("picture") ||
+        name.toLowerCase().includes("examination")
+      ) continue;
 
-      // ignore junk names
-      if (name.length < 3) continue;
-      if (name.toLowerCase().includes("note")) continue;
-      if (name.toLowerCase().includes("comment")) continue;
+      // valid lab test name pattern
+      if (!/^[A-Za-z][A-Za-z\s\-\(\),;]+$/.test(name)) continue;
 
+      // reject very long names (comments)
+      if (name.length > 40) continue;
       metrics.push({
         name,
         value,
         unit,
         range,
-        status: getStatus(parseFloat(value), range)
+        status: getStatus(value, range)
       });
 
     }
@@ -240,7 +330,62 @@ export class UploadReportsComponent {
 
   }
 
+  async fetchMetricInfo(metric: any) {
+
+    try {
+
+      const simplified = this.simplifyMetricName(metric.name);
+
+      const searchRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${simplified}&format=json&origin=*`
+      );
+
+      const searchData = await searchRes.json();
+
+      if (!searchData.query.search.length) return;
+
+      const title = searchData.query.search[0].title;
+
+      metric.wikiLink =
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+
+      const summaryRes = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+      );
+
+      const summaryData = await summaryRes.json();
+
+      metric.description =
+        summaryData.extract?.split(". ")[0] + ".";
+
+    } catch (err) {
+      console.log("Wiki fetch failed", err);
+    }
+
+  }
+  simplifyMetricName(name: string): string {
+
+    return name
+      .toLowerCase()
+
+      // remove brackets
+      .replace(/\(.*?\)/g, "")
+
+      // remove common lab words
+      .replace(/\b(serum|plasma|level|levels|test|total|count)\b/g, "")
+
+      // remove symbols
+      .replace(/[^a-z\s]/g, "")
+
+      // remove extra spaces
+      .replace(/\s+/g, " ")
+
+      .trim();
+  }
+
 }
+
+
 
 function getStatus(value: number, range: string) {
 
@@ -250,8 +395,14 @@ function getStatus(value: number, range: string) {
   const min = parseFloat(parts[0]);
   const max = parseFloat(parts[1]);
 
+  const margin = (max - min) * 0.05;
+
   if (value < min) return "low";
+
   if (value > max) return "high";
+
+  if (value < min + margin || value > max - margin)
+    return "borderline";
 
   return "normal";
 }
