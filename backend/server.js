@@ -4,8 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const diseaseRoutes = require('./routes/diseaseRoutes');
 
-console.log(process.env.EMAIL_USER);
-console.log(process.env.EMAIL_PASS);
+
 const app = express();
 
 app.use(cors());

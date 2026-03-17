@@ -126,7 +126,7 @@ input:focus {
 }
 
 .tag {
-    background: linear-gradient(135deg, var(--primary-teal), var(--teal-light));
+    background: lightblue;
     padding: 7px 14px;
     border-radius: 14px;
     font-size: 12px;
@@ -775,6 +775,3 @@ input:disabled {
     }
 
 }
-
-
-    

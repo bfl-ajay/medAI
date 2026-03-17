@@ -1159,18 +1159,18 @@ router.delete('/prescriptions/:id', authMiddleware, async (req, res) => {
 
 router.post('/contact', async (req, res) => {
     try {
-        const { name, email, message } = req.body;
+        const { name, email, message, contact } = req.body;
 
-        if (!name || !email || !message) {
+        if (!name || !email || !message || !contact) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
         const sql = `
-            INSERT INTO contact_messages (name, email, message)
-            VALUES (?, ?, ?)
+            INSERT INTO contact_messages (name, email, message, contact)
+            VALUES (?, ?, ?, ?)
         `;
 
-        await db.execute(sql, [name, email, message]);
+        await db.execute(sql, [name, email, message, contact]);
 
         res.json({ message: "Message sent successfully" });
 

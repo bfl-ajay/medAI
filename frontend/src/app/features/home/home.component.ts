@@ -10,9 +10,13 @@ import { AlertService } from 'src/app/core/services/alert.service';
 })
 export class HomeComponent implements AfterViewInit {
 
-  name: string = '';
+  firstName: string = '';
+  lastName: string = '';
   email: string = '';
+  contact: string = '';
   message: string = '';
+  fullName: string = '';
+
 
   @ViewChild('carousel') carousel!: ElementRef;
 
@@ -24,7 +28,7 @@ export class HomeComponent implements AfterViewInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private alert: AlertService
-  ) {}
+  ) { }
 
   ngAfterViewInit() {
 
@@ -48,19 +52,22 @@ export class HomeComponent implements AfterViewInit {
 
   }
 
-  submitContact() {
+  submitContact(form: any) {
+    const fullName = `${this.firstName} ${this.lastName}`.trim();
+
     const data = {
-      name: this.name,
+      name: fullName,
       email: this.email,
-      message: this.message
+      message: this.message,
+      contact: this.contact
     };
 
     this.authService.sendContactMessage(data).subscribe({
       next: () => {
         this.alert.success("Message sent successfully!");
-        this.name = '';
-        this.email = '';
-        this.message = '';
+
+        // ✅ This resets EVERYTHING (best way)
+        form.reset();
       },
       error: () => {
         this.alert.error("Failed to send message.");

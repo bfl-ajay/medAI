@@ -32,12 +32,11 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
 
         if (error.status === 401) {
-
-          // THIS triggers BehaviorSubject update
-          this.authService.logout();
-
-          // redirect
-          this.router.navigate(['/login']);
+          const token = this.authService.getToken();
+          if (token) {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }        
         }
 
         return throwError(() => error);

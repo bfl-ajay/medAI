@@ -16,7 +16,7 @@
       accessible on mobile and online for everyone
     </p>
 
-    <button class="hero-btn">
+    <button routerLink="/login" class="hero-btn">
       Consult today
     </button>
 
@@ -123,7 +123,7 @@
         To us, it’s not just work. We take pride in the solutions we deliver.
       </p>
 
-      <button class="outline-btn">
+      <button routerLink="/login" class="outline-btn">
         Learn more
       </button>
 
@@ -233,7 +233,7 @@
 
     <!-- DOTS -->
     <div class="carousel-dots">
-      <span *ngFor="let dot of [].constructor(totalSlides); let i = index" [class.active]="i === activeIndex"
+      <span *ngFor="let dot of [].constructor(totalSlides); let i= index" [class.active]="i === activeIndex"
         (click)="goToSlide(i)">
       </span>
     </div>
@@ -255,17 +255,17 @@
 
       <div class="info-item">
         <i class="fa-solid fa-phone"></i>
-        <span>+1012 3456 789</span>
+        <span>+91 9876578987</span>
       </div>
 
       <div class="info-item">
         <i class="fa-solid fa-envelope"></i>
-        <span>demo@gmail.com</span>
+        <span>support@healthadviser.com</span>
       </div>
 
       <div class="info-item">
         <i class="fa-solid fa-location-dot"></i>
-        <span>132 Dartmouth Street Boston,<br>Massachusetts 02156 United States</span>
+        <span> 123 Health Street, <br>Pune, India</span>
       </div>
 
       <div class="social-icons">
@@ -282,18 +282,17 @@
 
       <h2>Contact Us</h2>
 
-      <form class="contact-form" (ngSubmit)="submitContact()">
-
+      <form class="contact-form" #contactForm="ngForm" (ngSubmit)="submitContact(contactForm)">
         <div class="form-grid">
 
           <div class="form-group">
             <label>First Name</label>
-            <input type="text" [(ngModel)]="name" name="name" required>
+            <input type="text" [(ngModel)]="firstName" name="firstName" required>
           </div>
 
           <div class="form-group">
             <label>Last Name</label>
-            <input type="text" name="lastname">
+            <input type="text" [(ngModel)]="lastName" name="lastName" required>
           </div>
 
           <div class="form-group">
@@ -303,7 +302,7 @@
 
           <div class="form-group">
             <label>Phone Number</label>
-            <input type="text" name="phone">
+            <input type="text" [(ngModel)]="contact" name="phone" required>
           </div>
 
         </div>
@@ -313,7 +312,7 @@
           <textarea [(ngModel)]="message" name="message" required></textarea>
         </div>
 
-        <button type="submit" class="contact-btn">
+        <button type="submit" [disabled]="contactForm.invalid" class="contact-btn">
           Send Message
         </button>
 
@@ -404,7 +403,7 @@
 
       <p>
         <i class="fa-solid fa-phone"></i>
-        +91 98765 43210
+        +91 9876578987
       </p>
 
     </div>
