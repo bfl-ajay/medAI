@@ -190,7 +190,7 @@
         <input type="number" placeholder="Systolic (e.g., 120)" [(ngModel)]="systolic" />
         <input type="number" placeholder="Diastolic (e.g., 80)" [(ngModel)]="diastolic" />
         <input type="number" placeholder="Pulse (e.g., 72)" [(ngModel)]="pulse" />
-        <button class="add-bp-btn" (click)="addBP()"><i class="fa-solid fa-plus"></i></button>
+        <button class="add-bp-btn" (click)="addBP()"><i class="fa-solid fa-plus"></i> ADD</button>
       </div>
     </div>
 
@@ -230,7 +230,8 @@
         </tbody>
       </table>
     </div>
-    <div class="profile-section">
+
+    <div class="profile-section" *ngIf="bpRecords.length > 0; else noBPData">
       <div class="section-header bp-header">
         <h3>Blood Pressure History</h3>
         <div class="bp-controls">
@@ -261,6 +262,8 @@
         <h3>Blood Pressure History</h3>
         <div class="bp-controls">
         </div>
+
+
       </div>
       <select [(ngModel)]="selectedMonth" (change)="filterByMonth()" class="month-dropdown">
 
@@ -268,15 +271,22 @@
           {{ formatMonth(m) }}
         </option>
       </select>
-      <div class="bp-chart-wrapper">
+      <div class="bp-chart-wrapper" *ngIf="filteredBPRecords.length > 0">
         <canvas id="bpChart"></canvas>
       </div>
 
     </div>
-    <div *ngIf="currentBP.length !== 0">
+    <div *ngIf="currentBP.length === 0">
       <p>No blood pressure readings yet. Add your first reading above!</p>
     </div>
   </div>
+
+  <ng-template #noBPData>
+    <div class="empty-state">
+      <i class="fa-solid fa-heart-pulse"></i>
+      <small>Add your first reading above to start tracking.</small>
+    </div>
+  </ng-template>
 
   <!-- ===== HEALTH SCORE ===== -->
   <div class="card">
@@ -418,7 +428,7 @@
       <div class="reminder-container">
         <input [(ngModel)]="medicineName" placeholder="Medicine Name" type="text">
         <input [(ngModel)]="medicineTime" placeholder="Time" type="time">
-        <button class="default-btn" (click)="setReminder()"><i class="fa-solid fa-plus"></i></button>
+        <button class="default-btn" (click)="setReminder()"><i class="fa-solid fa-plus"></i> ADD</button>
       </div>
     </div>
 

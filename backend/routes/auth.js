@@ -11,7 +11,7 @@ const Tesseract = require('tesseract.js');
 const router = express.Router();
 
 const cron = require("node-cron");
-console.log("AUTH ROUTES LOADED");
+
 
 // Ensure upload folder exists
 const uploadDir = path.join(__dirname, '../uploads/reports');
@@ -92,7 +92,7 @@ const transporter = nodemailer.createTransport({
 
 router.post('/register', async (req, res) => {
 
-    console.log("REGISTER ROUTE HIT");
+    
 
     const {
         name,
@@ -137,7 +137,7 @@ router.post('/register', async (req, res) => {
             ]
         );
 
-        console.log("DB EXECUTED SUCCESSFULLY");
+        
 
         return res.status(201).json({
             message: "User registered successfully"
@@ -156,7 +156,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    console.log("LOGIN API HIT");
+    
     try {
         const { email, password } = req.body;
 
@@ -200,7 +200,7 @@ router.post('/login', async (req, res) => {
                 });
             }
 
-            console.log("LOGIN OTP:", otp);
+            
 
             return res.json({
                 twoFactorRequired: true,
@@ -532,10 +532,10 @@ router.post('/medicine', authMiddleware, (req, res) => {
         const cronTime = `${minute} ${hour} * * *`;
 
         cron.schedule(cronTime, () => {
-            console.log(`Reminder: Take ${medicineName}`);
+            
         });
 
-        console.log("Cron Scheduled:", cronTime);
+        
 
         res.json({ message: "Reminder set successfully" });
 
@@ -1275,8 +1275,8 @@ router.post("/verify-email-otp", authMiddleware, async (req, res) => {
         "DELETE FROM user_otp WHERE id=?",
         [rows[0].id]
     );
-    console.log("Entered OTP:", otp);
-    console.log("DB OTP:", rows[0].otp);
+    
+    
     res.json({ message: "Email verified successfully" });
 
 });
@@ -1293,7 +1293,7 @@ router.post("/send-phone-otp", authMiddleware, async (req, res) => {
         [userId, otp, phone]
     );
 
-    console.log("SMS OTP:", otp);
+    
 
     res.json({ message: "OTP sent to phone" });
 
@@ -1419,7 +1419,7 @@ router.post("/send-otp", async (req, res) => {
             text: `Your OTP is ${otp}`
         });
 
-        console.log("FORGOT PASSWORD OTP:", otp);
+        
 
         res.json({ message: "OTP sent" });
 

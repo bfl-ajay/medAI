@@ -23,7 +23,7 @@ export class AddInfoComponent implements OnInit {
 
   loadPastRecords() {
     this.authService.getAdditionalInfo().subscribe((data: any) => {
-      console.log("FROM API:", data);
+      
       this.pastRecords = data;
     });
   }

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { AlertService } from 'src/app/core/services/alert.service';
 
 @Component({
   selector: 'app-upload-prescription',
@@ -29,7 +30,7 @@ export class UploadPrescriptionComponent {
 
     this.authService.analyzePrescription(id).subscribe({
       next: (res: any) => {
-        console.log("Analysis Response:", res);
+
 
         this.analysisMap[id] = res;  // store result per prescription
         this.loadingId = null;
@@ -51,7 +52,7 @@ export class UploadPrescriptionComponent {
       this.selectedFile = event.dataTransfer.files[0];
     }
   }
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private alert: AlertService) { }
 
   ngOnInit() {
     this.loadPrescriptions();
@@ -96,20 +97,27 @@ export class UploadPrescriptionComponent {
       this.loadPrescriptions();
     });
   }
-  deletePrescription(id: number) {
-    if (!confirm('Are you sure you want to delete this prescription?')) {
-      return;
-    }
 
-    this.authService.deletePrescription(id).subscribe({
-      next: () => {
-        this.prescriptions = this.prescriptions.filter(p => p.id !== id);
-      },
-      error: (err) => {
-        console.error('Delete failed:', err);
-      }
-    });
+  deletePrescription(id: number) {
+
+    this.alert.confirm("Are you sure you want to DELETE Prescription?")
+      .then((result: any) => {
+
+        if (!result.isConfirmed) return;
+
+        this.authService.deletePrescription(id).subscribe({
+          next: () => {
+            this.prescriptions = this.prescriptions.filter(p => p.id !== id);
+            this.alert.success("Prescription deleted successfully!");
+          },
+          error: (err) => {
+            console.error('Delete failed:', err);
+          }
+        });
+
+      });
   }
+
   submit() {
     if (!this.selectedFile) return;
 

@@ -152,7 +152,7 @@ export class UploadReportsComponent {
         .replace(/ug\/dl/gi, "µg/dL")
         .replace(/pg\/ml/gi, "pg/mL")
         .replace(/ng\/ml/gi, "ng/mL");
-      console.log("FULL OCR TEXT:", fullText);
+      
 
       const normalizedText = this.normalizeReportText(fullText);
 

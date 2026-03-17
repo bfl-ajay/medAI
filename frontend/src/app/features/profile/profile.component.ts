@@ -62,7 +62,7 @@ export class ProfileComponent {
             this.user = data;
 
             this.twoFactorEnabled = data.two_factor_enabled === 1;
-            console.log("2FA FROM DB:", data.two_factor_enabled);
+
             if (data.knownDiseases) {
                 this.knownDiseases = [...data.knownDiseases];
             }
@@ -72,12 +72,12 @@ export class ProfileComponent {
         });
 
         this.authService.getReports().subscribe((data: any) => {
-            console.log("REPORTS:", data);
+
             this.reports = data;
         });
 
         this.authService.getPrescriptions().subscribe((data: any) => {
-            console.log("PRESCRIPTIONS:", data);
+
             this.prescriptions = data;
         });
         this.authService.getAdditionalInfo().subscribe((data: any) => {
@@ -105,7 +105,7 @@ export class ProfileComponent {
             knownDiseases: this.knownDiseases
         };
 
-        console.log("Sending diseases:", this.knownDiseases);
+
 
         this.authService.updateProfile(updateData).subscribe(() => {
 
@@ -121,7 +121,22 @@ export class ProfileComponent {
 
     }
 
+    discardPersonalChanges() {
 
+        this.authService.getProfile().subscribe((data: any) => {
+
+            this.user = JSON.parse(JSON.stringify(data));
+
+            // reset diseases also
+            this.knownDiseases = data.knownDiseases ? [...data.knownDiseases] : [];
+
+            // reset input helpers
+            this.diseaseInput = '';
+            this.filteredDiseases = [];
+
+        });
+
+    }
     openFile(filePath: string, type: 'reports' | 'prescriptions') {
 
         if (!filePath) return;
@@ -521,6 +536,35 @@ export class ProfileComponent {
 
         });
     }
+
+    cancelSecurityChanges() {
+
+        this.authService.getProfile().subscribe((data: any) => {
+
+            this.user = JSON.parse(JSON.stringify(data));
+
+            this.twoFactorEnabled = data.two_factor_enabled === 1;
+            this.recoveryEmail = data.recovery_email || '';
+
+            // reset temp fields
+            this.emailOtp = '';
+            this.phoneOtp = '';
+            this.phoneNumber = '';
+
+            this.emailOtpSent = false;
+            this.phoneOtpSent = false;
+
+            this.showPasswordForm = false;
+            this.currentPassword = '';
+            this.newPassword = '';
+            this.confirmPassword = '';
+
+            this.activeTab = 'personal';
+
+        });
+
+    }
+
     changePassword() {
 
         if (this.newPassword !== this.confirmPassword) {

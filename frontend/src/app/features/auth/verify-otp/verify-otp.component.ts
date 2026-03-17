@@ -75,7 +75,7 @@ export class VerifyOtpComponent {
 
     }
     resendOTP() {
-        console.log("Resend OTP clicked");
+        
         this.alert.success("OTP Resend Successfully");
     }
 

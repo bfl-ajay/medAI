@@ -65,7 +65,7 @@ export class DashboardComponent implements OnInit {
 
       },
       error: (err) => {
-        console.log(err);
+        
       }
 
     });
@@ -76,7 +76,7 @@ export class DashboardComponent implements OnInit {
       });
     // Load reminders
     this.authService.getReminders().subscribe((data: any) => {
-      console.log("REMINDERS FROM DB:", data);
+      
       this.reminders = data;
     });
     this.checkScreen();
@@ -171,12 +171,12 @@ export class DashboardComponent implements OnInit {
   getPlan() {
     this.authService.getAIPlan(this.profile).subscribe({
       next: (res: any) => {
-        console.log("PLAN:", res);
+        
 
         this.aiPlan = res;
       },
       error: (err) => {
-        console.log(err);
+        
         this.alert.error("Failed to load Plan");
       }
     });

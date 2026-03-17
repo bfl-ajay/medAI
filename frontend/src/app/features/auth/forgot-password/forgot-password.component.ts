@@ -34,7 +34,7 @@ export class ForgotPasswordComponent {
                 this.isLoading = false;
                 this.otpSent = true;
 
-                console.log("OTP sent");
+                
 
             },
 
@@ -57,7 +57,7 @@ export class ForgotPasswordComponent {
 
                 this.otpVerified = true;
 
-                console.log("OTP verified");
+                
 
             },
 

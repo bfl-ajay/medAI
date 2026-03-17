@@ -128,16 +128,16 @@ export class RegisterComponent {
       password: this.password
     };
 
-    console.log("Sending registration data:", data);
+    
 
     this.authService.register(data).subscribe({
       next: (res) => {
-        console.log("Registration successful:", res);
+        
         this.alert.success("Registration successful! Please log in.");
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        console.log("Registration error:", err);
+        
         this.alert.error(err.error?.message || 'Registration failed. Please try again.');
       }
     });
@@ -168,7 +168,7 @@ export class RegisterComponent {
           .slice(0, 8); // Limit to 8 suggestions
       },
       (error) => {
-        console.log("Disease search error:", error);
+        
         this.filteredDiseases = [];
       }
     );

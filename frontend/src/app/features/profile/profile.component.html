@@ -115,7 +115,7 @@
 
         <div class="form-actions">
 
-          <button class="discard-btn">
+          <button class="discard-btn" (click)="discardPersonalChanges()">
             Discard Changes
           </button>
 
@@ -419,7 +419,7 @@
 
           <div class="footer-actions">
 
-            <button class="cancel-btn" (click)="activeTab='personal'">
+            <button class="cancel-btn" (click)="cancelSecurityChanges()">
               Cancel
             </button>
 
