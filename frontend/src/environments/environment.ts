@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: '${environment.apiUrl}'
+  production: true,
+  apiUrl: 'https://medai-production-371c.up.railway.app'
 };
