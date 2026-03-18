@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
-
 @Injectable({
     providedIn: 'root'
 })
@@ -31,7 +30,7 @@ export class AuthService {
     // ================= AUTH =================
 
     register(data: any) {
-        return this.http.post(`${this.apiUrl}/register`, data);
+        return this.http.post(`${this.apiUrl}/api/auth/register`, data);
     }
 
     login(data: any) {
@@ -65,16 +64,18 @@ export class AuthService {
             })
         };
     }
+
     update2FA(enabled: boolean) {
         return this.http.post(
-            `${this.apiUrl}/update-2fa`,
+            `${this.apiUrl}/api/auth/update-2fa`,
             { enabled },
             this.getAuthHeaders()
         );
     }
+
     changePassword(data: any) {
         return this.http.post(
-            `${this.apiUrl}/change-password`,
+            `${this.apiUrl}/api/auth/change-password`,
             data,
             this.getAuthHeaders()
         );
@@ -83,39 +84,41 @@ export class AuthService {
     getUser() {
         return JSON.parse(localStorage.getItem('user') || '{}');
     }
+
     forgotPassword(email: string) {
         return this.http.post(`${this.apiUrl}/forgot-password`, { email });
     }
+
     sendOTP(email: string) {
         return this.http.post(`${this.apiUrl}/send-otp`, { email });
     }
+
     verifyOTP(email: string, otp: string) {
         return this.http.post(`${this.apiUrl}/api/auth/verify-forgot-otp`, {
             email,
             otp
         });
     }
-    resetPassword(email: string, newPassword: string) {
 
+    resetPassword(email: string, newPassword: string) {
         return this.http.post(
-            '${environment.apiUrl}/api/auth/reset-password',
+            `${this.apiUrl}/api/auth/reset-password`,
             {
                 email: email,
                 newPassword: newPassword
             }
         );
-
     }
 
     // ================= PROFILE =================
 
     getProfile() {
-        return this.http.get(`${this.apiUrl}/profile`, this.getAuthHeaders());
+        return this.http.get(`${this.apiUrl}/api/auth/profile`, this.getAuthHeaders());
     }
 
     updateProfile(profile: any) {
         return this.http.put(
-            `${this.apiUrl}api/auth/profile`,
+            `${this.apiUrl}/api/auth/profile`,
             profile,
             this.getAuthHeaders()
         );
@@ -129,17 +132,17 @@ export class AuthService {
     getCurrentUser() {
         return this.userSubject.value;
     }
-    updateRecoveryEmail(email: string) {
 
+    updateRecoveryEmail(email: string) {
         return this.http.post(
-            '${environment.apiUrl}/api/auth/update-recovery-email',
+            `${this.apiUrl}/api/auth/update-recovery-email`,
             { email }
         );
-
     }
+
     deactivateAccount() {
         return this.http.post(
-            '${environment.apiUrl}/api/auth/deactivate-account',
+            `${this.apiUrl}/api/auth/deactivate-account`,
             {}
         );
     }
@@ -315,6 +318,7 @@ export class AuthService {
             data
         );
     }
+
     uploadPhoto(formData: FormData) {
         return this.http.post(
             `${this.apiUrl}/upload-photo`,
@@ -322,6 +326,7 @@ export class AuthService {
             this.getAuthHeaders()
         );
     }
+
     sendEmailOTP() {
         return this.http.post(
             `${this.apiUrl}/send-email-otp`,
@@ -345,6 +350,7 @@ export class AuthService {
             this.getAuthHeaders()
         );
     }
+
     verifyPhoneOTP(otp: string) {
         return this.http.post(
             `${this.apiUrl}/verify-phone-otp`,
@@ -352,4 +358,6 @@ export class AuthService {
             this.getAuthHeaders()
         );
     }
+
+
 }
