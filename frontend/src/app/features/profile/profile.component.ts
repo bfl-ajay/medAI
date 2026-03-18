@@ -6,7 +6,9 @@ import { DiseaseService } from 'src/app/core/services/disease.service';
 import { Chart } from 'chart.js/auto';
 import { AlertService } from 'src/app/core/services/alert.service';
 import { ActivatedRoute } from '@angular/router';
-
+import { environment
+    
+ } from 'src/environments/environment';
 @Component({
     selector: 'app-profile',
     templateUrl: './profile.component.html',
@@ -141,8 +143,7 @@ export class ProfileComponent {
 
         if (!filePath) return;
 
-        const url = `http://localhost:5000/uploads/${type}/${filePath}`;
-
+        const url = `${environment.apiUrl}/uploads/${type}/${filePath}`;
         window.open(url, '_blank');
 
     }

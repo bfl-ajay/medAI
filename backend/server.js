@@ -7,8 +7,12 @@ const diseaseRoutes = require('./routes/diseaseRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: 'med-ai-f25g.vercel.app',
+    credentials: true
+})); 
 app.use(express.json());
+
 // ensure database has expected tables
 require('./db');
 
@@ -23,6 +27,6 @@ app.use('/uploads', express.static('uploads'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    
+
 });
 

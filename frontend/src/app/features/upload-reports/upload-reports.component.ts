@@ -86,7 +86,7 @@ export class UploadReportsComponent {
     const report = this.reports.find(r => r.id === id);
     if (!report) return;
 
-    const fileUrl = 'http://localhost:5000/uploads/reports/' + report.file_path;
+    const fileUrl = '${environment.apiUrl}/uploads/reports/' + report.file_path;
 
     this.reportLoadingId = id;
 

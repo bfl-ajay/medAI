@@ -48,7 +48,7 @@
           <!-- HEADER ROW -->
           <div class="report-header">
             <div class="report-info">
-              <a [href]="'http://localhost:5000/uploads/reports/' + r.file_path" target="_blank">
+              <a [href]="'${environment.apiUrl}/uploads/reports/' + r.file_path" target="_blank">
                 {{ r.file_name }}
               </a>
 

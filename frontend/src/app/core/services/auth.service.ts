@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
 
-    private apiUrl = 'http://localhost:5000/api/auth';
+    private apiUrl = environment.apiUrl;
 
     private userSubject = new BehaviorSubject<any>(null);
     user$ = this.userSubject.asObservable();
@@ -88,7 +90,7 @@ export class AuthService {
         return this.http.post(`${this.apiUrl}/send-otp`, { email });
     }
     verifyOTP(email: string, otp: string) {
-        return this.http.post('http://localhost:5000/api/auth/verify-forgot-otp', {
+        return this.http.post(`${this.apiUrl}/api/auth/verify-forgot-otp`, {
             email,
             otp
         });
@@ -96,7 +98,7 @@ export class AuthService {
     resetPassword(email: string, newPassword: string) {
 
         return this.http.post(
-            'http://localhost:5000/api/auth/reset-password',
+            '${environment.apiUrl}/api/auth/reset-password',
             {
                 email: email,
                 newPassword: newPassword
@@ -130,14 +132,14 @@ export class AuthService {
     updateRecoveryEmail(email: string) {
 
         return this.http.post(
-            'http://localhost:5000/api/auth/update-recovery-email',
+            '${environment.apiUrl}/api/auth/update-recovery-email',
             { email }
         );
 
     }
     deactivateAccount() {
         return this.http.post(
-            'http://localhost:5000/api/auth/deactivate-account',
+            '${environment.apiUrl}/api/auth/deactivate-account',
             {}
         );
     }

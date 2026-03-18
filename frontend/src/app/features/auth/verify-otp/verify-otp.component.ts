@@ -55,7 +55,7 @@ export class VerifyOtpComponent {
         const userId = localStorage.getItem('otpUserId');
         const otp = this.otpArray.join('');
 
-        this.http.post<any>('http://localhost:5000/api/auth/verify-login-otp', {
+        this.http.post<any>('${environment.apiUrl}/api/auth/verify-login-otp', {
             userId,
             otp
         })
