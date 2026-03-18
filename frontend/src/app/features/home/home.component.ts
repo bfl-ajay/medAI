@@ -1,5 +1,6 @@
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit,ChangeDetectorRef  } from '@angular/core';
 import { AuthService } from 'src/app/core/services/auth.service';
+
 import { Router, ActivatedRoute } from '@angular/router';
 import { AlertService } from 'src/app/core/services/alert.service';
 
@@ -27,13 +28,16 @@ export class HomeComponent implements AfterViewInit {
     private router: Router,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private alert: AlertService
+    private alert: AlertService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngAfterViewInit() {
 
     // carousel setup
     this.totalSlides = this.carousel.nativeElement.children.length;
+      this.cdr.detectChanges(); 
+
 
     // 🔹 Listen for fragment (#section)
     this.route.fragment.subscribe(fragment => {

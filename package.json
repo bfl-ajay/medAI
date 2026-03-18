@@ -10,7 +10,7 @@
     "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^3.11.174",
     "sweetalert2": "^11.26.22",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^4.0.2"
   },
   "devDependencies": {
     "@types/node": "^16.18.126"
