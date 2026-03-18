@@ -86,11 +86,11 @@ export class AuthService {
     }
 
     forgotPassword(email: string) {
-        return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+        return this.http.post(`${this.apiUrl}/api/auth/forgot-password`, { email });
     }
 
     sendOTP(email: string) {
-        return this.http.post(`${this.apiUrl}/send-otp`, { email });
+        return this.http.post(`${this.apiUrl}/api/auth/send-otp`, { email });
     }
 
     verifyOTP(email: string, otp: string) {
@@ -151,7 +151,7 @@ export class AuthService {
 
     getAIPlan(profile: any) {
         return this.http.post(
-            `${this.apiUrl}/ai-plan`,
+            `${this.apiUrl}/api/auth/ai-plan`,
             profile,
             this.getAuthHeaders()
         );
@@ -161,7 +161,7 @@ export class AuthService {
 
     setMedicine(data: any) {
         return this.http.post(
-            `${this.apiUrl}/medicine`,
+            `${this.apiUrl}/api/auth/medicine`,
             data,
             this.getAuthHeaders()
         );
@@ -171,14 +171,14 @@ export class AuthService {
 
     getReminders() {
         return this.http.get(
-            `${this.apiUrl}/reminders`,
+            `${this.apiUrl}/api/auth/reminders`,
             this.getAuthHeaders()
         );
     }
 
     addReminder(data: any) {
         return this.http.post(
-            `${this.apiUrl}/reminders`,
+            `${this.apiUrl}/api/auth/reminders`,
             data,
             this.getAuthHeaders()
         );
@@ -186,7 +186,7 @@ export class AuthService {
 
     updateReminder(id: number, data: any) {
         return this.http.put(
-            `${this.apiUrl}/reminders/${id}`,
+            `${this.apiUrl}/api/auth/reminders/${id}`,
             data,
             this.getAuthHeaders()
         );
@@ -194,7 +194,7 @@ export class AuthService {
 
     deleteReminder(id: number) {
         return this.http.delete(
-            `${this.apiUrl}/reminders/${id}`,
+            `${this.apiUrl}/api/auth/reminders/${id}`,
             this.getAuthHeaders()
         );
     }
@@ -203,7 +203,7 @@ export class AuthService {
 
     uploadReport(formData: FormData) {
         return this.http.post(
-            `${this.apiUrl}/upload-report`,
+            `${this.apiUrl}/api/auth/upload-report`,
             formData,
             this.getAuthHeaders()
         );
@@ -211,21 +211,21 @@ export class AuthService {
 
     getReports() {
         return this.http.get(
-            `${this.apiUrl}/reports`,
+            `${this.apiUrl}/api/auth/reports`,
             this.getAuthHeaders()
         );
     }
 
     deleteReport(id: number) {
         return this.http.delete(
-            `${this.apiUrl}/report/${id}`,
+            `${this.apiUrl}/api/auth/report/${id}`,
             this.getAuthHeaders()
         );
     }
 
     analyzeReport(id: number) {
         return this.http.get(
-            `${this.apiUrl}/analyze-report/${id}`,
+            `${this.apiUrl}/api/auth/analyze-report/${id}`,
             this.getAuthHeaders()
         );
     }
@@ -234,7 +234,7 @@ export class AuthService {
 
     uploadPrescription(formData: FormData) {
         return this.http.post(
-            `${this.apiUrl}/upload-prescription`,
+            `${this.apiUrl}/api/auth/upload-prescription`,
             formData,
             this.getAuthHeaders()
         );
@@ -242,21 +242,21 @@ export class AuthService {
 
     getPrescriptions() {
         return this.http.get(
-            `${this.apiUrl}/prescriptions`,
+            `${this.apiUrl}/api/auth/prescriptions`,
             this.getAuthHeaders()
         );
     }
 
     deletePrescription(id: number) {
         return this.http.delete(
-            `${this.apiUrl}/prescriptions/${id}`,
+            `${this.apiUrl}/api/auth/prescriptions/${id}`,
             this.getAuthHeaders()
         );
     }
 
     saveManualPrescription(data: any) {
         return this.http.post(
-            `${this.apiUrl}/save-manual-prescription`,
+            `${this.apiUrl}/api/auth/save-manual-prescription`,
             data,
             this.getAuthHeaders()
         );
@@ -264,7 +264,7 @@ export class AuthService {
 
     analyzePrescription(id: number) {
         return this.http.get(
-            `${this.apiUrl}/analyze-prescription/${id}`,
+            `${this.apiUrl}/api/auth/analyze-prescription/${id}`,
             this.getAuthHeaders()
         );
     }
@@ -273,7 +273,7 @@ export class AuthService {
 
     saveAdditionalInfo(data: any) {
         return this.http.post(
-            `${this.apiUrl}/save-add-info`,
+            `${this.apiUrl}/api/auth/save-add-info`,
             data,
             this.getAuthHeaders()
         );
@@ -281,14 +281,14 @@ export class AuthService {
 
     getAdditionalInfo() {
         return this.http.get(
-            `${this.apiUrl}/get-add-info`,
+            `${this.apiUrl}/api/auth/get-add-info`,
             this.getAuthHeaders()
         );
     }
 
     getLatestAdditionalInfo() {
         return this.http.get(
-            `${this.apiUrl}/get-latest-add-info`,
+            `${this.apiUrl}/api/auth/get-latest-add-info`,
             this.getAuthHeaders()
         );
     }
@@ -297,7 +297,7 @@ export class AuthService {
 
     addBloodPressure(data: any) {
         return this.http.post(
-            `${this.apiUrl}/blood_pressure_records`,
+            `${this.apiUrl}/api/auth/blood_pressure_records`,
             data,
             this.getAuthHeaders()
         );
@@ -305,7 +305,7 @@ export class AuthService {
 
     getBloodPressure() {
         return this.http.get(
-            `${this.apiUrl}/blood_pressure_records`,
+            `${this.apiUrl}/api/auth/blood_pressure_records`,
             this.getAuthHeaders()
         );
     }
@@ -314,14 +314,14 @@ export class AuthService {
 
     sendContactMessage(data: any) {
         return this.http.post(
-            `${this.apiUrl}/contact`,
+            `${this.apiUrl}/api/auth/contact`,
             data
         );
     }
 
     uploadPhoto(formData: FormData) {
         return this.http.post(
-            `${this.apiUrl}/upload-photo`,
+            `${this.apiUrl}/api/auth/upload-photo`,
             formData,
             this.getAuthHeaders()
         );
@@ -329,7 +329,7 @@ export class AuthService {
 
     sendEmailOTP() {
         return this.http.post(
-            `${this.apiUrl}/send-email-otp`,
+            `${this.apiUrl}/api/auth/send-email-otp`,
             {},
             this.getAuthHeaders()
         );
@@ -337,7 +337,7 @@ export class AuthService {
 
     verifyEmailOTP(otp: string) {
         return this.http.post(
-            `${this.apiUrl}/verify-email-otp`,
+            `${this.apiUrl}/api/auth/verify-email-otp`,
             { otp },
             this.getAuthHeaders()
         );
@@ -345,7 +345,7 @@ export class AuthService {
 
     sendPhoneOTP(phone: string) {
         return this.http.post(
-            `${this.apiUrl}/send-phone-otp`,
+            `${this.apiUrl}/api/auth/send-phone-otp`,
             { phone },
             this.getAuthHeaders()
         );
@@ -353,7 +353,7 @@ export class AuthService {
 
     verifyPhoneOTP(otp: string) {
         return this.http.post(
-            `${this.apiUrl}/verify-phone-otp`,
+            `${this.apiUrl}/api/auth/verify-phone-otp`,
             { otp },
             this.getAuthHeaders()
         );
