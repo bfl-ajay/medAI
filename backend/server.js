@@ -31,27 +31,3 @@ app.listen(PORT, () => {
 });
 
 
-
-const fs = require('fs');
-const path = require('path');
-const pool = require('./db');
-
-app.get('/import-db', async (req, res) => {
-  try {
-    const filePath = path.join(__dirname, 'health_advier.sql');
-    console.log("📂 File path:", filePath);
-
-    const sql = fs.readFileSync(filePath, 'utf8');
-
-    await pool.query(sql);
-
-    res.send("✅ Database imported successfully");
-  } catch (err) {
-    console.error("🔥 IMPORT ERROR:", err);
-
-    res.status(500).send(`
-      ❌ Import failed <br><br>
-      ERROR: ${err.message}
-    `);
-  }
-});
