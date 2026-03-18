@@ -35,7 +35,7 @@ export class AuthService {
     }
 
     login(data: any) {
-        return this.http.post(`${this.apiUrl}/login`, data);
+        return this.http.post(`${this.apiUrl}/api/auth/login`, data);
     }
 
     saveToken(token: string) {
@@ -115,7 +115,7 @@ export class AuthService {
 
     updateProfile(profile: any) {
         return this.http.put(
-            `${this.apiUrl}/profile`,
+            `${this.apiUrl}api/auth/profile`,
             profile,
             this.getAuthHeaders()
         );
