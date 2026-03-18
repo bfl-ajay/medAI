@@ -30,3 +30,19 @@ app.listen(PORT, () => {
 
 });
 
+
+const fs = require('fs');
+const pool = require('./db'); 
+
+app.get('/import-db', async (req, res) => {
+  try {
+    const sql = fs.readFileSync('./health_advier.sql', 'utf8');
+
+    await pool.query(sql);
+
+    res.send("✅ Database imported successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Import failed");
+  }
+});
