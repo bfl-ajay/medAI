@@ -8,7 +8,7 @@ const diseaseRoutes = require('./routes/diseaseRoutes');
 const app = express();
 
 app.use(cors({
-    origin: 'med-ai-f25g.vercel.app',
+    origin: 'https://med-ai-f25g.vercel.app',
     credentials: true
 })); 
 app.use(express.json());
