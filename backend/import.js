@@ -1,27 +1,18 @@
-require('dotenv').config(); // ⭐ VERY IMPORTANT
-
-const fs = require('fs');
-const mysql = require('mysql2/promise');
-
-(async () => {
+app.get('/import-db', async (req, res) => {
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      port: process.env.DB_PORT
-    });
+    const fs = require('fs');
+    const path = require('path');
 
-    console.log("✅ Connected to Railway DB");
+    const filePath = path.join(__dirname, 'health_advier.sql');
+    console.log("Reading file from:", filePath);
 
-    const sql = fs.readFileSync('./health_advier.sql', 'utf8');
+    const sql = fs.readFileSync(filePath, 'utf8');
 
-    await connection.query(sql);
+    await pool.query(sql);
 
-    console.log("🎉 Database imported successfully");
-    process.exit();
+    res.send("✅ Database imported successfully");
   } catch (err) {
-    console.error("❌ Import error:", err);
+    console.error("IMPORT ERROR:", err);
+    res.status(500).send(err.message); // 👈 IMPORTANT
   }
-})();
+});
