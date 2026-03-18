@@ -155,7 +155,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-const bcrypt = require('bcryptjs');
 
 router.post('/login', async (req, res) => {
     try {
