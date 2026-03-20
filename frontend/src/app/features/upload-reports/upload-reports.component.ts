@@ -84,101 +84,28 @@ export class UploadReportsComponent {
       return;
     }
 
-    const report = this.reports.find(r => r.id === id);
-    if (!report) return;
-
-
-
-    const fileUrl = `${environment.apiUrl}/uploads/reports/${report.file_path}`;
     this.reportLoadingId = id;
 
-    try {
+    this.authService.analyzeReport(id).subscribe({
+      next: (res: any) => {
 
-      let fullText = '';
+        this.reportAnalysisMap[id] = {
+          reportType: "Medical Report",
+          metrics: [], // optional (or parse from backend later)
+          extractedText: res.extractedText,
+          suggestions: res.suggestions
+        };
 
-      // ===== PDF FILE =====
-      if (report.file_name.toLowerCase().endsWith('.pdf')) {
-
-        const pdf = await pdfjsLib.getDocument(fileUrl).promise;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-
-          const page = await pdf.getPage(i);
-
-          // const viewport = page.getViewport({ scale: 2 });
-
-          // const canvas = document.createElement('canvas');
-          // const context = canvas.getContext('2d');
-
-          // if (!context) continue;
-
-          // canvas.width = viewport.width;
-          // canvas.height = viewport.height;
-
-          // await page.render({
-          //   canvasContext: context,
-          //   // canvas: canvas,
-          //   viewport: viewport
-          // }).promise;
-
-          // const imageData = canvas.toDataURL('image/png');
-
-          // if (!imageData || typeof imageData !== 'string') continue;
-
-          const textContent = await page.getTextContent();
-
-          const pageText = textContent.items
-            .map((item: any) => item.str)
-            .join('\n');
-
-          fullText += pageText + "\n";
-        }
-
+        this.reportLoadingId = null;
+      },
+      error: () => {
+        this.reportLoadingId = null;
+        this.alert.error("Report analysis failed");
       }
-
-      // ===== IMAGE FILE =====
-      else {
-
-        const result = await Tesseract.recognize(
-          fileUrl,
-          'eng',
-          { logger: m => console.log(m) }
-        );
-
-        fullText = result.data.text;
-
-      }
-      fullText = fullText
-        .replace(/Total Iron Binding Capacity/gi, "TIBC")
-        .replace(/µg\/dl/gi, "µg/dL")
-        .replace(/ug\/dl/gi, "µg/dL")
-        .replace(/pg\/ml/gi, "pg/mL")
-        .replace(/ng\/ml/gi, "ng/mL");
-
-
-      const normalizedText = this.normalizeReportText(fullText);
-
-      const metrics = this.extractMedicalMetrics(normalizedText);
-
-      // fetch description for each metric
-      const reportType = this.detectReportType(fullText);
-
-      this.reportAnalysisMap[id] = {
-        reportType,
-        metrics
-      };
-
-    } catch (err) {
-
-      console.error("OCR ERROR:", err);
-      this.alert.error("Report analysis failed");
-
-    }
-
-    this.reportLoadingId = null;
+    });
 
   }
-
+  
   extractMedicalMetrics(text: string) {
 
     const metrics: any[] = [];
