@@ -176,14 +176,41 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
+        if (user.two_factor_enabled) {
+
+            const otp = generateOTP();
+
+            await db.execute(
+                "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'login')",
+                [user.id, otp]
+            );
+
+            // send email OTP
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: user.email,
+                subject: "Login OTP",
+                text: `Your login OTP is ${otp}`
+            });
+
+            return res.json({
+                requires2FA: true,
+                userId: user.id
+            });
+        }
+
         const token = jwt.sign(
             { id: user.id },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        res.json({ token });
+        await db.execute(
+            "DELETE FROM user_otp WHERE id=?",
+            [rows[0].id]
+        );
 
+        res.json({ token });
     } catch (err) {
         console.error("LOGIN ERROR:", err);
         res.status(500).json({ message: err.message });

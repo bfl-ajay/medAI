@@ -30,7 +30,7 @@ export class LoginComponent {
 
   login() {
 
-    if (this.isLoading) return; // prevents double click
+    if (this.isLoading) return;
 
     this.isLoading = true;
 
@@ -39,26 +39,27 @@ export class LoginComponent {
 
         this.isLoading = false;
 
-        if (res.twoFactorRequired) {
+        if (res.requires2FA) {
 
           localStorage.setItem('otpUserId', res.userId);
+
           this.alert.success("OTP Sent", "Check your email");
 
           this.router.navigate(['/verify-otp']);
-          this.authService.setUser(res.user);
 
-
-        } else {
-
-          localStorage.setItem('token', res.token);
-
-          this.authService.getProfile().subscribe((user: any) => {
-
-            this.authService.setUser(user);
-            this.router.navigate(['/dashboard']);
-
-          });
+          return; 
         }
+
+        // ✅ normal login
+        localStorage.setItem('token', res.token);
+
+        this.authService.getProfile().subscribe((user: any) => {
+
+          this.authService.setUser(user);
+
+          this.router.navigate(['/dashboard']);
+
+        });
 
       },
 
@@ -70,6 +71,7 @@ export class LoginComponent {
     });
 
   }
+
   goToForgotPassword() {
     this.router.navigate(['/forgot-password']);
   }

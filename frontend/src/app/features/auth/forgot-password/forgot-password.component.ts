@@ -21,6 +21,9 @@ export class ForgotPasswordComponent {
     isLoading = false;
     errorMessage = '';
 
+    showNewPassword = false;
+    showConfirmPassword = false;
+
     constructor(private router: Router, private authService: AuthService) { }
 
     sendOTP() {
@@ -34,7 +37,7 @@ export class ForgotPasswordComponent {
                 this.isLoading = false;
                 this.otpSent = true;
 
-                
+
 
             },
 
@@ -57,7 +60,7 @@ export class ForgotPasswordComponent {
 
                 this.otpVerified = true;
 
-                
+
 
             },
 
@@ -73,33 +76,33 @@ export class ForgotPasswordComponent {
 
     resetPassword() {
 
-  if (this.newPassword !== this.confirmPassword) {
-    this.errorMessage = "Passwords do not match";
-    return;
-  }
+        if (this.newPassword !== this.confirmPassword) {
+            this.errorMessage = "Passwords do not match";
+            return;
+        }
 
-  this.authService.resetPassword(
-    this.email,
-    this.newPassword
-  ).subscribe({
+        this.authService.resetPassword(
+            this.email,
+            this.newPassword
+        ).subscribe({
 
-    next: () => {
+            next: () => {
 
-      alert("Password reset successfully");
+                alert("Password reset successfully");
 
-      this.router.navigate(['/login']);
+                this.router.navigate(['/login']);
 
-    },
+            },
 
-    error: () => {
+            error: () => {
 
-      this.errorMessage = "Failed to reset password";
+                this.errorMessage = "Failed to reset password";
+
+            }
+
+        });
 
     }
-
-  });
-
-}
 
     goToLogin() {
         this.router.navigate(['/login']);

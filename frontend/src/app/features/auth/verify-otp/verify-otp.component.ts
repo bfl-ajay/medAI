@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AlertService } from 'src/app/core/services/alert.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { environment } from 'src/environments/environment';
 @Component({
     selector: 'app-verify-otp',
     templateUrl: './verify-otp.component.html',
@@ -10,7 +11,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 })
 export class VerifyOtpComponent {
 
-    constructor(private http: HttpClient, private router: Router, private alert: AlertService, private authService : AuthService) { }
+    constructor(private http: HttpClient, private router: Router, private alert: AlertService, private authService: AuthService) { }
     otpArray = ['', '', '', '', '', ''];
 
     trackByIndex(index: number) {
@@ -55,27 +56,26 @@ export class VerifyOtpComponent {
         const userId = localStorage.getItem('otpUserId');
         const otp = this.otpArray.join('');
 
-        this.http.post<any>('${environment.apiUrl}/api/auth/verify-login-otp', {
+        this.http.post<any>(`${environment.apiUrl}/api/auth/verify-login-otp`, {
             userId,
             otp
-        })
-            .subscribe(res => {
+        }).subscribe(res => {
 
-                localStorage.setItem('token', res.token);
+            localStorage.setItem('token', res.token);
 
-                this.authService.getProfile().subscribe((user: any) => {
+            this.authService.getProfile().subscribe((user: any) => {
 
-                    this.authService.setUser(user);   // 🔴 updates navbar instantly
+                this.authService.setUser(user);   // 🔴 updates navbar instantly
 
-                    this.router.navigate(['/dashboard']);
-
-                });
+                this.router.navigate(['/dashboard']);
 
             });
 
+        });
+
     }
     resendOTP() {
-        
+
         this.alert.success("OTP Resend Successfully");
     }
 
