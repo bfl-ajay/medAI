@@ -3,6 +3,7 @@ import * as Tesseract from 'tesseract.js';
 
 import { AuthService } from 'src/app/core/services/auth.service';
 import { AlertService } from 'src/app/core/services/alert.service';
+import { environment } from 'src/environments/environment';
 
 import * as pdfjsLib from 'pdfjs-dist';
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc =
@@ -86,8 +87,9 @@ export class UploadReportsComponent {
     const report = this.reports.find(r => r.id === id);
     if (!report) return;
 
-    const fileUrl = '${environment.apiUrl}/uploads/reports/' + report.file_path;
 
+
+    const fileUrl = `${environment.apiUrl}/uploads/reports/${report.file_path}`;
     this.reportLoadingId = id;
 
     try {
@@ -152,7 +154,7 @@ export class UploadReportsComponent {
         .replace(/ug\/dl/gi, "µg/dL")
         .replace(/pg\/ml/gi, "pg/mL")
         .replace(/ng\/ml/gi, "ng/mL");
-      
+
 
       const normalizedText = this.normalizeReportText(fullText);
 
