@@ -15,8 +15,11 @@ const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
 // Ensure upload folder exists
-const uploadDir = '/tmp/uploads/reports';
+const baseUploadDir = path.join(process.cwd(), 'uploads');
 
+const uploadDir = path.join(baseUploadDir, 'reports');
+const prescriptionDir = path.join(baseUploadDir, 'prescriptions');
+const profileDir = path.join(baseUploadDir, 'profile');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -38,7 +41,6 @@ const upload = multer({
 });
 
 // Prescription folder
-const prescriptionDir = '/tmp/uploads/prescriptions';
 if (!fs.existsSync(prescriptionDir)) {
     fs.mkdirSync(prescriptionDir, { recursive: true });
 }
@@ -59,7 +61,6 @@ const uploadPrescription = multer({
     limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-const profileDir = '/tmp/uploads/profile';
 
 if (!fs.existsSync(profileDir)) {
     fs.mkdirSync(profileDir, { recursive: true });
@@ -904,7 +905,7 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
         }
 
         const filePath = path.join(
-            '/tmp/uploads/reports/',
+            uploadDir,
             rows[0].file_path
         );
 
@@ -953,10 +954,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Prescription not found" });
         }
 
-        const filePath = path.join(
-            "/tmp/uploads/prescriptions",
-            rows[0].file_path
-        );
+        path.join(prescriptionDir, rows[0].file_path)
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
 

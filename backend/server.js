@@ -31,8 +31,7 @@ app.use('/api/diseases', diseaseRoutes);
 app.get('/', (req, res) => {
     res.send('Welcome to the Health Adviser API');
 });
-app.use('/uploads', express.static('uploads'));
-
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
