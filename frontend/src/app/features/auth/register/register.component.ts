@@ -30,8 +30,15 @@ export class RegisterComponent {
   showConfirmPassword = false;
   filteredDiseases: string[] = [];
   bloodGroups: string[] = [
-    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Other'
   ];
+  heightUnit: string = 'cm';
+
+  heightCm: number | null = null;
+  heightFt: number | null = null;
+  heightIn: number | null = null;
+
+
 
   constructor(
     private authService: AuthService,
@@ -218,5 +225,24 @@ export class RegisterComponent {
    */
   navigateToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+
+  setHeightUnit(unit: string) {
+
+    if (unit === this.heightUnit) return;
+
+    // Convert before switching
+    if (unit === 'ft' && this.heightCm) {
+      const totalInches = this.heightCm / 2.54;
+      this.heightFt = Math.floor(totalInches / 12);
+      this.heightIn = Math.round(totalInches % 12);
+    }
+
+    if (unit === 'cm' && this.heightFt !== null && this.heightIn !== null) {
+      this.heightCm = Math.round((this.heightFt * 12 + this.heightIn) * 2.54);
+    }
+
+    this.heightUnit = unit;
   }
 }

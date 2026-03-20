@@ -92,8 +92,6 @@ const transporter = nodemailer.createTransport({
 
 router.post('/register', async (req, res) => {
 
-
-
     const {
         name,
         email,
@@ -1358,6 +1356,7 @@ router.post("/verify-forgot-otp", async (req, res) => {
 });
 
 router.post("/send-otp", async (req, res) => {
+    console.log("Send-OTP Function");
 
     const { email } = req.body;
 

@@ -17,9 +17,16 @@ export class AuthInterceptor implements HttpInterceptor {
 
     const token = this.authService.getToken();
 
+    // ✅ PUBLIC ROUTES (no token)
+    const isPublicRoute =
+      req.url.includes('send-otp') ||
+      req.url.includes('login') ||
+      req.url.includes('register') ||
+      req.url.includes('forgot-password');
+
     let authReq = req;
 
-    if (token) {
+    if (token && !isPublicRoute) {
       authReq = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -28,21 +35,20 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return next.handle(authReq).pipe(
-
       catchError((error: HttpErrorResponse) => {
 
         if (error.status === 401) {
-          const token = this.authService.getToken();
-          if (token) {
+
+          // ⚠️ Only logout if it's NOT a public route
+          if (!isPublicRoute && token) {
             this.authService.logout();
             this.router.navigate(['/login']);
-          }        
+          }
+
         }
 
         return throwError(() => error);
-
       })
-
     );
   }
 }

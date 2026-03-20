@@ -10,11 +10,17 @@ const app = express();
 app.use(cors({
     origin: [
         'https://med-ai-f25g.vercel.app',
-        'http://localhost:4200'
+        'http://localhost:4200',
+        'http://localhost:5000'
     ],
     credentials: true
 }));
 app.use(express.json());
+
+app.use((req, res, next) => {
+    console.log("Incoming:", req.method, req.url);
+    next();
+});
 
 // ensure database has expected tables
 require('./db');

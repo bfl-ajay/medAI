@@ -419,6 +419,9 @@ input:focus {
   input {
     padding: 12px 10px 12px;
   }
+  .bg-left{
+    display: none;
+  }
 }
 
 /* Small phones */

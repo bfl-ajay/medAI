@@ -88,12 +88,35 @@
 
             <!-- Height -->
             <div class="form-group">
-              <label>Height (cm)</label>
-              <input type="number" [(ngModel)]="height" name="height" placeholder="e.g., 170" required min="50"
-                #heightRef="ngModel">
-              <div class="error" *ngIf="heightRef.invalid && heightRef.touched">
-                Enter valid height
+
+              <!-- Label + Toggle -->
+              <div class="label-row">
+                <label>Height</label>
+
+                <div class="unit-toggle">
+                  <span [class.active]="heightUnit === 'cm'" (click)="setHeightUnit('cm')">cm</span>
+
+                  <span [class.active]="heightUnit === 'ft'" (click)="setHeightUnit('ft')">ft/in</span>
+                </div>
               </div>
+
+              <!-- CM Input -->
+              <input *ngIf="heightUnit === 'cm'" type="number" [(ngModel)]="heightCm" name="heightCm"
+                placeholder="e.g. 170" required>
+
+              <!-- FT + IN Inputs -->
+              <div class="ft-in-wrapper" *ngIf="heightUnit === 'ft'">
+
+                <input type="number" [(ngModel)]="heightFt" name="heightFt" placeholder="ft" min="0">
+
+                <span class="unit-label">′</span>
+
+                <input type="number" [(ngModel)]="heightIn" name="heightIn" placeholder="in" min="0" max="11">
+
+                <span class="unit-label">″</span>
+
+              </div>
+
             </div>
 
             <!-- Weight -->

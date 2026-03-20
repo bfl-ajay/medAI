@@ -546,7 +546,53 @@ select:focus {
 .toggle-password:hover {
   color: var(--primary-blue);
 }
-  
+
+/* Label row */
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Toggle container */
+.unit-toggle {
+  display: flex;
+  background: #f2f4f7;
+  border-radius: 20px;
+  padding: 2px;
+}
+
+/* Each tab */
+.unit-toggle span {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: var(--text-gray);
+  transition: 0.2s;
+}
+
+/* Active tab */
+.unit-toggle span.active {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.ft-in-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ft-in-wrapper input {
+  width: 7%;
+}
+
+.unit-label {
+  font-size: 20px;
+  color: black;
+}
+
 /* ===== RESPONSIVE ===== */
 
 @media(max-width:900px) {
