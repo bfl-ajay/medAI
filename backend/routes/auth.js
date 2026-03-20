@@ -80,12 +80,19 @@ const uploadPhoto = multer({ storage: profileStorage });
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    service: "gmail",
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    connectionTimeout: 10000, // 10 sec
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("SMTP ERROR:", error);
+    } else {
+        console.log("SMTP READY");
     }
 });
 
@@ -186,15 +193,18 @@ router.post('/login', async (req, res) => {
             );
 
             // send email OTP
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: user.email,
-                subject: "Login OTP",
-                text: `Your login OTP is ${otp}`
-            });
-
+            try {
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: email,
+                    subject: "OTP",
+                    text: `Your OTP is ${otp}`
+                });
+            } catch (err) {
+                console.error("EMAIL FAILED:", err);
+            }
             return res.json({
-                requires2FA: true,
+                twoFactorRequired: true,
                 userId: user.id
             });
         }
@@ -1210,42 +1220,35 @@ router.post(
     });
 
 router.post("/send-email-otp", authMiddleware, async (req, res) => {
+
+    const userId = req.user.id;
+
+    const [user] = await db.execute(
+        "SELECT email FROM users WHERE id=?",
+        [userId]
+    );
+
+    const email = user[0].email;
+
+    const otp = generateOTP();
+
+    await db.execute(
+        "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
+        [userId, otp]
+    );
+
     try {
-        const userId = req.user.id;
-
-        const [user] = await db.execute(
-            "SELECT email FROM users WHERE id=?",
-            [userId]
-        );
-
-        const email = user[0].email;
-
-        const otp = generateOTP();
-
-        await db.execute(
-            "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
-            [userId, otp]
-        );
-
-        // ✅ SEND EMAIL WITHOUT BLOCKING RESPONSE
-        transporter.sendMail({
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject: "Health Adviser OTP",
+            subject: "OTP",
             text: `Your OTP is ${otp}`
-        }).then(() => {
-            console.log(" Email sent");
-        }).catch(err => {
-            console.error(" EMAIL ERROR:", err);
         });
-
-        // ✅ ALWAYS RESPOND
-        res.json({ message: "OTP sent" });
-
     } catch (err) {
-        console.error("SEND EMAIL OTP ERROR:", err);
-        res.status(500).json({ message: "Failed to send OTP" });
+        console.error("EMAIL FAILED:", err);
     }
+    res.json({ message: "OTP sent" });
+
 });
 
 router.post("/verify-email-otp", authMiddleware, async (req, res) => {
@@ -1416,13 +1419,16 @@ router.post("/send-otp", async (req, res) => {
             [userId, otp]
         );
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Password Reset OTP",
-            text: `Your OTP is ${otp}`
-        });
-
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "OTP",
+                text: `Your OTP is ${otp}`
+            });
+        } catch (err) {
+            console.error("EMAIL FAILED:", err);
+        }
 
 
         res.json({ message: "OTP sent" });
