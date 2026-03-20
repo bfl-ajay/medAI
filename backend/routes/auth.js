@@ -954,11 +954,9 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         }
 
         const filePath = path.join(
-            __dirname,
-            "../uploads/prescriptions",
+            "/tmp/uploads/prescriptions",
             rows[0].file_path
         );
-
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
 
