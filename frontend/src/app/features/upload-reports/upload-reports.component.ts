@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import * as Tesseract from 'tesseract.js';
+import { HttpClient } from '@angular/common/http';
 
 import { AuthService } from 'src/app/core/services/auth.service';
 import { AlertService } from 'src/app/core/services/alert.service';
@@ -22,7 +23,8 @@ export class UploadReportsComponent {
   uploadSuccess = false;
   reportAnalysisMap: { [key: number]: any } = {};
   reportLoadingId: number | null = null;
-  constructor(private authService: AuthService, private alert: AlertService) { }
+  constructor(private authService: AuthService, private alert: AlertService, private http: HttpClient
+  ) { }
 
 
   ngOnInit() {
@@ -86,26 +88,33 @@ export class UploadReportsComponent {
 
     this.reportLoadingId = id;
 
-    this.authService.analyzeReport(id).subscribe({
-      next: (res: any) => {
+    try {
 
-        this.reportAnalysisMap[id] = {
-          reportType: "Medical Report",
-          metrics: [], // optional (or parse from backend later)
-          extractedText: res.extractedText,
-          suggestions: res.suggestions
-        };
+      const res: any = await this.http
+        .get(`${environment.apiUrl}/api/auth/analyze-report/${id}?t=${Date.now()}`)
+        .toPromise();
+      const extractedText = res.extractedText;
 
-        this.reportLoadingId = null;
-      },
-      error: () => {
-        this.reportLoadingId = null;
-        this.alert.error("Report analysis failed");
-      }
-    });
+      const normalizedText = this.normalizeReportText(extractedText);
 
+      const metrics = this.extractMedicalMetrics(normalizedText);
+
+      const reportType = this.detectReportType(extractedText);
+
+      this.reportAnalysisMap[id] = {
+        reportType,
+        metrics
+      };
+
+    } catch (err) {
+
+      console.error("ANALYZE ERROR:", err);
+      this.alert.error("Report analysis failed");
+
+    }
+
+    this.reportLoadingId = null;
   }
-  
   extractMedicalMetrics(text: string) {
 
     const metrics: any[] = [];
