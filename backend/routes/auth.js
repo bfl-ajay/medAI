@@ -1232,17 +1232,14 @@ router.post("/send-email-otp", authMiddleware, async (req, res) => {
         "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
         [userId, otp]
     );
-
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Health Adviser OTP",
-            text: `Your OTP is ${otp}`
-        });
-    } catch (err) {
+    transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Login OTP",
+        text: `Your login OTP is ${otp}`
+    }).catch(err => {
         console.error("EMAIL FAILED:", err);
-    }
+    });
 
 });
 
