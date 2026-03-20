@@ -11,7 +11,8 @@ const Tesseract = require('tesseract.js');
 const router = express.Router();
 
 const cron = require("node-cron");
-
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
 
 // Ensure upload folder exists
 const uploadDir = path.join(__dirname, '../uploads/reports');
@@ -80,21 +81,15 @@ const uploadPhoto = multer({ storage: profileStorage });
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // IMPORTANT
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    },
-    connectionTimeout: 10000, // 10 sec
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP ERROR:", error);
-    } else {
-        console.log("SMTP READY");
     }
 });
+
 
 
 router.post('/register', async (req, res) => {
@@ -192,19 +187,20 @@ router.post('/login', async (req, res) => {
                 [user.id, otp]
             );
 
-            // send email OTP
             try {
                 await transporter.sendMail({
                     from: process.env.EMAIL_USER,
-                    to: email,
-                    subject: "OTP",
-                    text: `Your OTP is ${otp}`
+                    to: user.email,
+                    subject: "Login OTP",
+                    text: `Your login OTP is ${otp}`
                 });
             } catch (err) {
                 console.error("EMAIL FAILED:", err);
             }
+
+            // ALWAYS return this
             return res.json({
-                twoFactorRequired: true,
+                requires2FA: true,
                 userId: user.id
             });
         }
@@ -1241,13 +1237,12 @@ router.post("/send-email-otp", authMiddleware, async (req, res) => {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject: "OTP",
+            subject: "Health Adviser OTP",
             text: `Your OTP is ${otp}`
         });
     } catch (err) {
         console.error("EMAIL FAILED:", err);
     }
-    res.json({ message: "OTP sent" });
 
 });
 
@@ -1419,16 +1414,13 @@ router.post("/send-otp", async (req, res) => {
             [userId, otp]
         );
 
-        try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: "OTP",
-                text: `Your OTP is ${otp}`
-            });
-        } catch (err) {
-            console.error("EMAIL FAILED:", err);
-        }
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset OTP",
+            text: `Your OTP is ${otp}`
+        });
+
 
 
         res.json({ message: "OTP sent" });
