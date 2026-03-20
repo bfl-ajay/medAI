@@ -205,10 +205,7 @@ router.post('/login', async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        await db.execute(
-            "DELETE FROM user_otp WHERE id=?",
-            [rows[0].id]
-        );
+
 
         res.json({ token });
     } catch (err) {
