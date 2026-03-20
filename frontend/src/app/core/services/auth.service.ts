@@ -225,7 +225,7 @@ export class AuthService {
 
     analyzeReport(id: number) {
         return this.http.get(
-            `${this.apiUrl}/analyze-report/${id}`,
+            `${this.apiUrl}/api/auth/analyze-report/${id}`,
             this.getAuthHeaders()
         );
     }

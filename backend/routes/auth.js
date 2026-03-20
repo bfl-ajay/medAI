@@ -198,7 +198,7 @@ router.post('/login', async (req, res) => {
             }).catch(err => {
                 console.error("EMAIL FAILED:", err);
             });
-            
+
             // ALWAYS return this
             return res.json({
                 requires2FA: true,
@@ -933,6 +933,7 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Failed to analyze report" });
     }
 });
+
 router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
     try {
         const prescriptionId = req.params.id;
