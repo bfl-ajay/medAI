@@ -90,16 +90,25 @@ export class UploadReportsComponent {
 
     try {
 
+      // ✅ CALL BACKEND ONLY FOR TEXT
       const res: any = await this.http
         .get(`${environment.apiUrl}/api/auth/analyze-report/${id}?t=${Date.now()}`)
         .toPromise();
-      const extractedText = res.extractedText;
 
-      const normalizedText = this.normalizeReportText(extractedText);
+      let fullText = res.extractedText || '';
 
+      // ✅ SAME OLD CLEANING (VERY IMPORTANT)
+      fullText = fullText
+        .replace(/Total Iron Binding Capacity/gi, "TIBC")
+        .replace(/µg\/dl/gi, "µg/dL")
+        .replace(/ug\/dl/gi, "µg/dL")
+        .replace(/pg\/ml/gi, "pg/mL")
+        .replace(/ng\/ml/gi, "ng/mL");
+
+      // ✅ YOUR ORIGINAL MAGIC
+      const normalizedText = this.normalizeReportText(fullText);
       const metrics = this.extractMedicalMetrics(normalizedText);
-
-      const reportType = this.detectReportType(extractedText);
+      const reportType = this.detectReportType(fullText);
 
       this.reportAnalysisMap[id] = {
         reportType,
@@ -107,10 +116,8 @@ export class UploadReportsComponent {
       };
 
     } catch (err) {
-
-      console.error("ANALYZE ERROR:", err);
+      console.error("ANALYSIS ERROR:", err);
       this.alert.error("Report analysis failed");
-
     }
 
     this.reportLoadingId = null;
