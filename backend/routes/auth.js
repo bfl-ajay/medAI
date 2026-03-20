@@ -157,7 +157,7 @@ router.post('/register', async (req, res) => {
 
 
 router.post('/login', async (req, res) => {
-    console.log("OTP:", otp);
+
     try {
         const { email, password } = req.body;
 
@@ -182,6 +182,8 @@ router.post('/login', async (req, res) => {
         if (user.two_factor_enabled) {
 
             const otp = generateOTP();
+
+            console.log("OTP:", otp);
 
             await db.execute(
                 "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'login')",
