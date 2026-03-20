@@ -910,6 +910,13 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
             rows[0].file_path
         );
 
+        // 🔥 DEBUG LOGS (ADD THIS)
+        console.log("==== ANALYZE DEBUG ====");
+        console.log("Requested file:", rows[0].file_path);
+        console.log("Full path:", filePath);
+        console.log("File exists:", fs.existsSync(filePath));
+        console.log("=======================");
+
         let extractedText = "";
 
         if (filePath.endsWith('.pdf')) {
