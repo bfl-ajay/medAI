@@ -190,17 +190,15 @@ router.post('/login', async (req, res) => {
                 [user.id, otp]
             );
 
-            try {
-                await transporter.sendMail({
-                    from: process.env.EMAIL_USER,
-                    to: user.email,
-                    subject: "Login OTP",
-                    text: `Your login OTP is ${otp}`
-                });
-            } catch (err) {
+            transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: user.email,
+                subject: "Login OTP",
+                text: `Your login OTP is ${otp}`
+            }).catch(err => {
                 console.error("EMAIL FAILED:", err);
-            }
-
+            });
+            
             // ALWAYS return this
             return res.json({
                 requires2FA: true,
