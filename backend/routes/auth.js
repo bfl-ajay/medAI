@@ -955,6 +955,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         }
 
         path.join(prescriptionDir, rows[0].file_path)
+        
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
 
