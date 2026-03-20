@@ -26,7 +26,8 @@ export class RegisterComponent {
   password = '';
   confirmPassword = '';
   searchDiseases: string[] = [];
-
+  showPassword = false;
+  showConfirmPassword = false;
   filteredDiseases: string[] = [];
   bloodGroups: string[] = [
     'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
@@ -128,16 +129,16 @@ export class RegisterComponent {
       password: this.password
     };
 
-    
+
 
     this.authService.register(data).subscribe({
       next: (res) => {
-        
+
         this.alert.success("Registration successful! Please log in.");
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        
+
         this.alert.error(err.error?.message || 'Registration failed. Please try again.');
       }
     });
@@ -168,7 +169,7 @@ export class RegisterComponent {
           .slice(0, 8); // Limit to 8 suggestions
       },
       (error) => {
-        
+
         this.filteredDiseases = [];
       }
     );

@@ -18,7 +18,11 @@
       </div> -->
 
       <!-- Step Indicator -->
+      <button *ngIf="currentStep === 2" class="back-btn top-back-real" (click)="prevStep()">
+
+      </button>
       <div class="step-indicator">
+
         <div class="step" [class.active]="currentStep === 1">
           <span class="step-num">1</span>
           <span class="step-label">Personal Info</span>
@@ -169,8 +173,19 @@
 
           <div class="form-group">
             <label>Password</label>
-            <input type="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 characters" required
-              minlength="6" #passwordRef="ngModel">
+
+            <div class="password-wrapper">
+              <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
+                placeholder="Minimum 6 characters" required minlength="6" #passwordRef="ngModel">
+
+              <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
+
+                <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'">
+                </i>
+
+              </button>
+            </div>
+
             <div class="error" *ngIf="passwordRef.invalid && passwordRef.touched">
               Minimum 6 characters required
             </div>
@@ -178,8 +193,19 @@
 
           <div class="form-group">
             <label>Confirm Password</label>
-            <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Re-enter password"
-              required #confirmRef="ngModel">
+
+            <div class="password-wrapper">
+              <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword"
+                name="confirmPassword" placeholder="Re-enter password" required #confirmRef="ngModel">
+
+              <button type="button" class="toggle-password" (click)="showConfirmPassword = !showConfirmPassword">
+
+                <i class="fa-solid" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'">
+                </i>
+
+              </button>
+            </div>
+
             <div class="error" *ngIf="confirmPassword !== password && confirmRef.touched">
               Passwords do not match
             </div>
@@ -187,9 +213,7 @@
 
           <!-- Step 2 Buttons -->
           <div class="step-buttons">
-            <button type="button" class="back-btn" (click)="prevStep()">
-              ← Back
-            </button>
+
             <button type="submit" class="submit-btn" [disabled]="!isStep2Valid()" [class.disabled]="!isStep2Valid()">
               Create Account
             </button>

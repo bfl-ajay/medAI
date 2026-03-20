@@ -475,7 +475,78 @@ select:focus {
   }
 }
 
+.top-back-real {
+  position: absolute;
+  top: 12%;
+  left: 15%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-gray);
+
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  z-index: 10;
+}
+
+/* Arrow circle */
+.top-back-real::before {
+  content: "←";
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: #eee;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  transition: 0.2s;
+}
+
+/* Hover */
+.top-back-real:hover::before {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+
+  font-size: 16px;
+  /* bigger for icon */
+
+  color: var(--text-gray);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password:hover {
+  color: var(--primary-blue);
+}
+  
 /* ===== RESPONSIVE ===== */
 
 @media(max-width:900px) {
@@ -500,17 +571,158 @@ select:focus {
 
 }
 
-@media(max-width:600px) {
+@media (max-width: 600px) {
+
+  /* ===== LAYOUT ===== */
 
   .register-container {
-    padding: 40px 20px;
+    padding: 24px 16px;
   }
+
+  .register-wrapper {
+    gap: 20px;
+  }
+
+  .register-left {
+    padding: 24px 18px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+
+  .bg-left {
+    display: none;
+  }
+
+  /* ===== TITLES ===== */
 
   .form-title {
-    font-size: 28px;
+    font-size: 26px;
+    margin-bottom: 8px;
   }
 
-  .register-right {
-    display: none;
+  .form-subtitle {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* ===== STEP HEADER (FIXED) ===== */
+
+  .step-indicator {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .step-num {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .step-line {
+    width: 25px;
+  }
+
+  /* BACK BUTTON - TOP LEFT CORNER */
+  .top-back-real {
+    position: absolute;
+
+    top: 34px;
+    left: 21px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-gray);
+
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    z-index: 10;
+  }
+
+  /* Arrow circle */
+  .top-back-real::before {
+    content: "←";
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10%;
+    background: #eee;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition: 0.2s;
+  }
+
+  /* Hover */
+  .top-back-real:hover::before {
+    background: var(--primary-blue);
+    color: white;
+  }
+
+  /* ===== FORM GRID ===== */
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+
+  /* ===== INPUTS ===== */
+
+  input,
+  select {
+    font-size: 15px;
+    padding: 12px 4px;
+  }
+
+  label {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  /* ===== BUTTONS ===== */
+
+  .next-btn,
+  .submit-btn {
+    padding: 13px;
+    font-size: 14px;
+  }
+
+  .step-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ===== TAGS ===== */
+
+  .tag {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  /* ===== SUGGESTIONS ===== */
+
+  .suggestions {
+    max-height: 140px;
   }
 }

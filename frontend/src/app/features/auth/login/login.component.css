@@ -24,7 +24,7 @@ body {
 
 .login-container {
   width: 100%;
-  min-height: 100vh;
+  min-height: 90vh;
 
   padding: 80px 24px;
 
@@ -327,6 +327,27 @@ input:focus {
   animation: floatBg 8s ease-in-out infinite;
 }
 
+/* ===== REMEMBER ME FIX ===== */
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* space between checkbox & text */
+  cursor: pointer;
+}
+
+.remember input {
+  margin: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.remember span {
+  font-size: 13px;
+  color: var(--text-gray);
+}
+
 @keyframes floatBg {
 
   0%,
@@ -394,13 +415,37 @@ input:focus {
     font-size: 20px;
     font-weight: 600;
   }
+
+  input {
+    padding: 12px 10px 12px;
+  }
 }
 
-@media(max-width:600px) {
+/* Small phones */
+@media (max-width: 600px) {
 
   .login-container {
-    padding: 40px 20px;
+    padding: 30px 16px;
+    min-height: 80vh;
+
   }
+
+  .login-wrapper {
+    gap: 30px;
+  }
+
+  /* Card becomes softer & more premium */
+  .login-left {
+    width: 100%;
+    padding: 24px 20px;
+
+    border-radius: 18px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Titles tighter but readable */
+
 
   .form-title {
     font-size: 28px;
@@ -409,5 +454,91 @@ input:focus {
   .form-subtitle {
     font-size: 20px;
     font-weight: 600;
+  }
+
+  /* Inputs more touch-friendly */
+  input {
+    width: 100%;
+    font-size: 15px;
+
+    padding: 14px 10px 14px 38px;
+
+    border-bottom: 1.5px solid #ddd;
+  }
+
+  /* Better spacing between fields */
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  /* Icon alignment fix */
+  .input-icon {
+    left: 10px;
+    font-size: 14px;
+  }
+
+  /* Password toggle easier to tap */
+  .toggle-password {
+    font-size: 13px;
+    right: 5px;
+  }
+
+  /* Options spacing */
+  .options {
+    font-size: 12px;
+    margin: 16px 0;
+  }
+
+  /* Button becomes more tappable */
+  .login-btn {
+    padding: 14px;
+    font-size: 15px;
+
+    border-radius: 25px;
+  }
+
+  /* Error box spacing */
+  .error-message {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  /* Signup link breathing space */
+  .signup-link {
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  /* Illustration smaller & less dominant */
+  .laptop-illustration {
+    width: 280px;
+    margin-top: 10px;
+  }
+}
+
+
+/* Extra small devices (very important) */
+@media (max-width: 400px) {
+
+  .login-container {
+    padding: 24px 12px;
+  }
+
+  .login-left {
+    padding: 20px 16px;
+  }
+
+  .form-title {
+    font-size: 22px;
+  }
+
+  input {
+    font-size: 14px;
+    padding: 12px 8px 12px 34px;
+  }
+
+  .login-btn {
+    font-size: 14px;
+    padding: 12px;
   }
 }
