@@ -1210,32 +1210,42 @@ router.post(
     });
 
 router.post("/send-email-otp", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
 
-    const userId = req.user.id;
+        const [user] = await db.execute(
+            "SELECT email FROM users WHERE id=?",
+            [userId]
+        );
 
-    const [user] = await db.execute(
-        "SELECT email FROM users WHERE id=?",
-        [userId]
-    );
+        const email = user[0].email;
 
-    const email = user[0].email;
+        const otp = generateOTP();
 
-    const otp = generateOTP();
+        await db.execute(
+            "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
+            [userId, otp]
+        );
 
-    await db.execute(
-        "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
-        [userId, otp]
-    );
+        // ✅ SEND EMAIL WITHOUT BLOCKING RESPONSE
+        transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Health Adviser OTP",
+            text: `Your OTP is ${otp}`
+        }).then(() => {
+            console.log(" Email sent");
+        }).catch(err => {
+            console.error(" EMAIL ERROR:", err);
+        });
 
-    await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Health Adviser OTP",
-        text: `Your OTP is ${otp}`
-    });
+        // ✅ ALWAYS RESPOND
+        res.json({ message: "OTP sent" });
 
-    res.json({ message: "OTP sent" });
-
+    } catch (err) {
+        console.error("SEND EMAIL OTP ERROR:", err);
+        res.status(500).json({ message: "Failed to send OTP" });
+    }
 });
 
 router.post("/verify-email-otp", authMiddleware, async (req, res) => {
