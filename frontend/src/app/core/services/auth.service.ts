@@ -224,6 +224,8 @@ export class AuthService {
     }
 
     analyzeReport(id: number) {
+        console.log("CLICK WORKING", id);
+
         return this.http.get(
             `${this.apiUrl}/api/auth/analyze-report/${id}`,
             this.getAuthHeaders()

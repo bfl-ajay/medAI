@@ -58,7 +58,7 @@
             </div>
 
             <div class="action-buttons">
-              <button class="analyze-btn" (click)="analyzeReport(r.id)">
+              <button type="button" class="analyze-btn" (click)="analyzeReport(r.id)">
                 <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'"></i> Analyze
                 {{ reportAnalysisMap[r.id] ? '' : '' }}
               </button>
@@ -69,7 +69,7 @@
           </div>
 
           <!-- Loading -->
-          <div *ngIf="reportLoadingId === r.id" class="analysis-loading"> <i class="fa-solid fa-spinner fa-spin"></i>
+          <div  class="analysis-loading"> <i class="fa-solid fa-spinner fa-spin"></i>
             Analyzing Report...
           </div>
 
