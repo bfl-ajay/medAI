@@ -887,58 +887,49 @@ router.post('/save-add-info', authMiddleware, async (req, res) => {
 
 });
 
-router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
-    try {
-        const reportId = req.params.id;
-        const userId = req.user.id;
+async analyzeReport(id: number) {
 
-        const sql = `
-            SELECT file_path
-            FROM medical_reports
-            WHERE id = ? AND user_id = ?
-        `;
-
-        const [rows] = await db.execute(sql, [reportId, userId]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "Report not found" });
-        }
-
-        const filePath = path.join(
-            uploadDir,
-            rows[0].file_path
-        );
-
-        // 🔥 DEBUG LOGS (ADD THIS)
-        console.log("==== ANALYZE DEBUG ====");
-        console.log("Requested file:", rows[0].file_path);
-        console.log("Full path:", filePath);
-        console.log("File exists:", fs.existsSync(filePath));
-        console.log("=======================");
-
-        let extractedText = "";
-
-        if (filePath.endsWith('.pdf')) {
-            const dataBuffer = fs.readFileSync(filePath);
-            const pdfData = await pdf(dataBuffer);
-            extractedText = pdfData.text;
-        } else {
-            const result = await Tesseract.recognize(filePath, 'eng');
-            extractedText = result.data.text;
-        }
-
-        const suggestions = generateSuggestions(extractedText);
-
-        res.json({
-            extractedText,
-            suggestions
-        });
-
-    } catch (error) {
-        console.error("ANALYZE REPORT ERROR:", error);
-        res.status(500).json({ message: "Failed to analyze report" });
+    if (this.reportAnalysisMap[id]) {
+        delete this.reportAnalysisMap[id];
+        return;
     }
-});
+
+    this.reportLoadingId = id;
+
+    try {
+
+        // ✅ CALL BACKEND ONLY FOR TEXT
+        const res: any = await this.http
+            .get(`${environment.apiUrl}/api/auth/analyze-report/${id}?t=${Date.now()}`)
+            .toPromise();
+
+        let fullText = res.extractedText || '';
+
+        // ✅ SAME OLD CLEANING (VERY IMPORTANT)
+        fullText = fullText
+            .replace(/Total Iron Binding Capacity/gi, "TIBC")
+            .replace(/µg\/dl/gi, "µg/dL")
+            .replace(/ug\/dl/gi, "µg/dL")
+            .replace(/pg\/ml/gi, "pg/mL")
+            .replace(/ng\/ml/gi, "ng/mL");
+
+        // ✅ YOUR ORIGINAL MAGIC
+        const normalizedText = this.normalizeReportText(fullText);
+        const metrics = this.extractMedicalMetrics(normalizedText);
+        const reportType = this.detectReportType(fullText);
+
+        this.reportAnalysisMap[id] = {
+            reportType,
+            metrics
+        };
+
+    } catch (err) {
+        console.error("ANALYSIS ERROR:", err);
+        this.alert.error("Report analysis failed");
+    }
+
+    this.reportLoadingId = null;
+}
 
 router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
     try {
@@ -955,7 +946,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         }
 
         path.join(prescriptionDir, rows[0].file_path)
-        
+
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
 
