@@ -15,7 +15,7 @@ const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
 // Ensure upload folder exists
-const uploadDir = path.join(__dirname, '../uploads/reports');
+const uploadDir = '/tmp/uploads/reports';
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -38,8 +38,7 @@ const upload = multer({
 });
 
 // Prescription folder
-const prescriptionDir = path.join(__dirname, '../uploads/prescriptions');
-
+const prescriptionDir = '/tmp/uploads/prescriptions';
 if (!fs.existsSync(prescriptionDir)) {
     fs.mkdirSync(prescriptionDir, { recursive: true });
 }
@@ -60,7 +59,7 @@ const uploadPrescription = multer({
     limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-const profileDir = path.join(__dirname, '../uploads/profile');
+const profileDir = '/tmp/uploads/profile';
 
 if (!fs.existsSync(profileDir)) {
     fs.mkdirSync(profileDir, { recursive: true });
@@ -905,8 +904,7 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
         }
 
         const filePath = path.join(
-            __dirname,
-            '../uploads/reports/',
+            '/tmp/uploads/reports/',
             rows[0].file_path
         );
 
