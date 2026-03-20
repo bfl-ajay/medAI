@@ -157,6 +157,7 @@ router.post('/register', async (req, res) => {
 
 
 router.post('/login', async (req, res) => {
+    console.log("OTP:", otp);
     try {
         const { email, password } = req.body;
 
@@ -1234,13 +1235,13 @@ router.post("/send-email-otp", authMiddleware, async (req, res) => {
     );
     transporter.sendMail({
         from: process.env.EMAIL_USER,
-        to: user.email,
+        to: email, // ✅ FIXED
         subject: "Login OTP",
         text: `Your login OTP is ${otp}`
     }).catch(err => {
         console.error("EMAIL FAILED:", err);
     });
-
+    res.json({ message: "OTP sent" });
 });
 
 router.post("/verify-email-otp", authMiddleware, async (req, res) => {
@@ -1411,13 +1412,14 @@ router.post("/send-otp", async (req, res) => {
             [userId, otp]
         );
 
-        await transporter.sendMail({
+        transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Password Reset OTP",
             text: `Your OTP is ${otp}`
+        }).catch(err => {
+            console.error("EMAIL FAILED:", err);
         });
-
 
 
         res.json({ message: "OTP sent" });
