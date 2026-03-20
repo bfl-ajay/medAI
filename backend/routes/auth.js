@@ -1217,31 +1217,38 @@ router.post(
     });
 
 router.post("/send-email-otp", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
 
-    const userId = req.user.id;
+        const [rows] = await db.execute(
+            "SELECT email FROM users WHERE id=?",
+            [userId]
+        );
 
-    const [user] = await db.execute(
-        "SELECT email FROM users WHERE id=?",
-        [userId]
-    );
+        const email = rows[0].email;
 
-    const email = user[0].email;
+        const otp = generateOTP(); // ✅ DEFINE HERE
 
-    const otp = generateOTP();
+        await db.execute(
+            "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
+            [userId, otp]
+        );
 
-    await db.execute(
-        "INSERT INTO user_otp (user_id, otp, type) VALUES (?, ?, 'email')",
-        [userId, otp]
-    );
-    transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email, // ✅ FIXED
-        subject: "Login OTP",
-        text: `Your login OTP is ${otp}`
-    }).catch(err => {
-        console.error("EMAIL FAILED:", err);
-    });
-    res.json({ message: "OTP sent" });
+        transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Health Adviser OTP",
+            text: `Your OTP is ${otp}` // ✅ SAFE
+        }).catch(err => {
+            console.error("EMAIL FAILED:", err);
+        });
+
+        res.json({ message: "OTP sent" }); // ✅ IMPORTANT
+
+    } catch (err) {
+        console.error("SEND EMAIL OTP ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
 router.post("/verify-email-otp", authMiddleware, async (req, res) => {
