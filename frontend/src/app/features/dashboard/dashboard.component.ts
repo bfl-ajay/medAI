@@ -62,10 +62,11 @@ export class DashboardComponent implements OnInit {
         this.profile.healthScore = this.calculateHealthScore();
 
         // Wait for DOM to render
+        this.tryCreateRadarChart(); // 👈 ADD THIS
 
       },
       error: (err) => {
-        
+
       }
 
     });
@@ -76,7 +77,7 @@ export class DashboardComponent implements OnInit {
       });
     // Load reminders
     this.authService.getReminders().subscribe((data: any) => {
-      
+
       this.reminders = data;
     });
     this.checkScreen();
@@ -103,7 +104,7 @@ export class DashboardComponent implements OnInit {
       });
 
       this.labMetrics = allMetrics;
-
+      this.tryCreateRadarChart();
     });
   }
 
@@ -171,12 +172,12 @@ export class DashboardComponent implements OnInit {
   getPlan() {
     this.authService.getAIPlan(this.profile).subscribe({
       next: (res: any) => {
-        
+
 
         this.aiPlan = res;
       },
       error: (err) => {
-        
+
         this.alert.error("Failed to load Plan");
       }
     });
@@ -494,13 +495,10 @@ export class DashboardComponent implements OnInit {
 
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.createRiskRadarChart();
-    }, 200);
-  }
 
   createRiskRadarChart() {
+    const canvas = document.getElementById('riskRadarChart') as HTMLCanvasElement;
+    if (!canvas) return;
     const labRisks = this.calculateLabRisks();
     const bmiRisk = this.profile?.bmi > 30 ? 80 :
       this.profile?.bmi > 25 ? 60 :
@@ -515,8 +513,7 @@ export class DashboardComponent implements OnInit {
 
     const healthScoreRisk = 100 - (this.profile?.healthScore || 50);
 
-    new Chart("riskRadarChart", {
-
+    new Chart(canvas, {
       type: 'radar',
 
       data: {
@@ -798,6 +795,14 @@ export class DashboardComponent implements OnInit {
       month: 'long',
       year: 'numeric'
     });
+  }
+
+  tryCreateRadarChart() {
+    if (!this.profile || !this.labMetrics) return;
+
+    setTimeout(() => {
+      this.createRiskRadarChart();
+    }, 0);
   }
 
   // LOGOUT
