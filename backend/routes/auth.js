@@ -969,22 +969,48 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         // 🔥 PARSE MEDICINES
         const medicines = [];
 
-        const lines = extractedText.split('\n');
+        const lines = extractedText
+            .split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
 
-        lines.forEach(line => {
-            const lower = line.toLowerCase();
+        for (let i = 0; i < lines.length; i++) {
 
+            const line = lines[i].toLowerCase();
+
+            // detect medicine keywords
             if (
-                lower.includes('mg') ||
-                lower.includes('tablet') ||
-                lower.includes('capsule')
+                line.includes('tab') ||
+                line.includes('tablet') ||
+                line.includes('cap') ||
+                line.includes('capsule')
             ) {
+
+                const originalLine = lines[i];
+
+                // extract name (remove tab/cap words)
+                const cleanName = originalLine
+                    .replace(/tab|tablet|cap|capsule/gi, '')
+                    .trim();
+
+                // extract dosage
+                const dosageMatch = cleanName.match(/\d+ ?mg/);
+                const dosage = dosageMatch ? dosageMatch[0] : '';
+
+                // clean medicine name (remove dosage)
+                const name = cleanName.replace(/\d+ ?mg/gi, '').trim();
+
                 medicines.push({
-                    name: line.trim(),
-                    dosage: "1 tablet",
+                    name: name,
+                    dosage: dosage,
                     times: ["09:00"] // temp default
                 });
             }
+        }
+
+        res.json({
+            extractedText,
+            medicines
         });
 
         res.json({
