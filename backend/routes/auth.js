@@ -972,46 +972,40 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         const lines = extractedText
             .split('\n')
             .map(l => l.trim())
-            .filter(l => l.length > 0);
+            .filter(l => l.length > 2);
 
         for (let i = 0; i < lines.length; i++) {
 
-            const line = lines[i].toLowerCase();
+            const line = lines[i];
 
-            // detect medicine keywords
+            // 🔥 Skip obvious junk
             if (
-                line.includes('tab') ||
-                line.includes('tablet') ||
-                line.includes('cap') ||
-                line.includes('capsule')
-            ) {
+                line.toLowerCase().includes('doctor') ||
+                line.toLowerCase().includes('hospital') ||
+                line.toLowerCase().includes('clinic') ||
+                line.toLowerCase().includes('patient')
+            ) continue;
 
-                const originalLine = lines[i];
+            // 🔥 Find dosage pattern
+            const hasDosage = /\d+\s?mg/i.test(line);
 
-                // extract name (remove tab/cap words)
-                const cleanName = originalLine
-                    .replace(/tab|tablet|cap|capsule/gi, '')
-                    .trim();
+            if (hasDosage) {
 
-                // extract dosage
-                const dosageMatch = cleanName.match(/\d+ ?mg/);
-                const dosage = dosageMatch ? dosageMatch[0] : '';
+                // Try extracting name
+                let name = line.replace(/\d+\s?mg/gi, '').trim();
 
-                // clean medicine name (remove dosage)
-                const name = cleanName.replace(/\d+ ?mg/gi, '').trim();
+                // Clean symbols
+                name = name.replace(/[^a-zA-Z\s]/g, '').trim();
 
-                medicines.push({
-                    name: name,
-                    dosage: dosage,
-                    times: ["09:00"] // temp default
-                });
+                if (name.length > 2) {
+                    medicines.push({
+                        name,
+                        dosage: line.match(/\d+\s?mg/i)?.[0] || '',
+                        times: ["09:00"]
+                    });
+                }
             }
         }
-
-        res.json({
-            extractedText,
-            medicines
-        });
 
         res.json({
             extractedText,
