@@ -17,6 +17,8 @@ dns.setDefaultResultOrder('ipv4first');
 const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const { sendRecoveryEmailAdded } = require('../routes/util.js');
+
 
 // Ensure upload folder exists
 const baseUploadDir = path.join(process.cwd(), 'uploads');
@@ -1513,14 +1515,41 @@ router.post("/change-password", authMiddleware, async (req, res) => {
 router.post('/update-recovery-email', authMiddleware, async (req, res) => {
 
     const userId = req.user.id;
-    const { email } = req.body;
+    const { recoveryEmail } = req.body;
 
     try {
 
         await db.query(
             `UPDATE users SET recovery_email = ? WHERE id = ?`,
-            [email, userId]
+            [recoveryEmail, userId]
         );
+
+        res.json({ message: "Recovery email updated" });
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+
+    }
+
+});
+
+
+router.post('/update-recovery-email', authMiddleware, async (req, res) => {
+
+    const userId = req.user.id;
+    const { recoveryEmail } = req.body;
+
+    try {
+
+        await db.query(
+            `UPDATE users SET recovery_email = ? WHERE id = ?`,
+            [recoveryEmail, userId]
+        );
+
+        // 🔥 SEND EMAIL VIA RESEND
+        await sendRecoveryEmailAdded(recoveryEmail);
 
         res.json({ message: "Recovery email updated" });
 
