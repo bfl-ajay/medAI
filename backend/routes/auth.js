@@ -83,10 +83,21 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
-    secure: false, // IMPORTANT
+    secure: false,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("SMTP ERROR:", error);
+    } else {
+        console.log("SMTP READY");
     }
 });
 
@@ -190,13 +201,15 @@ router.post('/login', async (req, res) => {
                 [user.id, otp]
             );
 
-            transporter.sendMail({
+            await transporter.sendMail({
                 from: process.env.EMAIL_USER,
                 to: user.email,
                 subject: "Login OTP",
                 text: `Your login OTP is ${otp}`
+            }).then(info => {
+                console.log("EMAIL SENT:", info);
             }).catch(err => {
-                console.error("EMAIL FAILED:", err);
+                console.error("EMAIL ERROR FULL:", err);
             });
 
             // ALWAYS return this
@@ -955,7 +968,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         }
 
         path.join(prescriptionDir, rows[0].file_path)
-        
+
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
 
