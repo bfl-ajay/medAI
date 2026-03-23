@@ -747,7 +747,7 @@ router.post(
                 [
                     userId,
                     req.file.originalname,
-                    req.file.path,
+                    req.file.path, 
                     doctorName,
                     notes
                 ]
