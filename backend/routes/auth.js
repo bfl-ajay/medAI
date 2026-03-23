@@ -734,13 +734,7 @@ router.post(
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
-
-            const sql = `
-                INSERT INTO prescriptions
-                (user_id, file_name, file_path, doctor_name, notes)
-                VALUES (?, ?, ?, ?, ?)
-            `;
-
+            
             await db.execute(
                 `INSERT INTO prescriptions (user_id, file_name, file_url, doctor_name, notes)
      VALUES (?, ?, ?, ?, ?)`,
