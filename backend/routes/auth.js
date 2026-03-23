@@ -375,7 +375,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
             SET name = ?, 
                 email = ?, 
                 height = ?, 
-                weight = ?, 
+                weight = ?,  
                 bloodGroup = ?, 
                 known_diseases = ?
             WHERE id = ?
@@ -1454,10 +1454,12 @@ router.post("/reset-password", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        await db.execute(
+        const [result] = await db.execute(
             "UPDATE users SET password=? WHERE email=?",
             [hashedPassword, email]
         );
+
+        console.log("PASSWORD UPDATE RESULT:", result);
 
         res.json({ message: "Password reset successful" });
 
