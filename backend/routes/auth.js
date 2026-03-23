@@ -734,14 +734,14 @@ router.post(
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
-            
+
             await db.execute(
                 `INSERT INTO prescriptions (user_id, file_name, file_url, doctor_name, notes)
      VALUES (?, ?, ?, ?, ?)`,
                 [
                     userId,
                     req.file.originalname,
-                    req.file.path, 
+                    req.file.path,
                     doctorName,
                     notes
                 ]
@@ -759,7 +759,7 @@ router.get('/prescriptions', authMiddleware, async (req, res) => {
         const userId = req.user.id;
 
         const sql = `
-            SELECT id, file_name, file_path, doctor_name, notes, uploaded_at
+            SELECT id, file_name, file_url, doctor_name, notes, uploaded_at
             FROM prescriptions
             WHERE user_id = ?
             ORDER BY uploaded_at DESC
@@ -966,7 +966,31 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
 
         const extractedText = result.data.text;
 
-        res.json({ extractedText });
+        // 🔥 PARSE MEDICINES
+        const medicines = [];
+
+        const lines = extractedText.split('\n');
+
+        lines.forEach(line => {
+            const lower = line.toLowerCase();
+
+            if (
+                lower.includes('mg') ||
+                lower.includes('tablet') ||
+                lower.includes('capsule')
+            ) {
+                medicines.push({
+                    name: line.trim(),
+                    dosage: "1 tablet",
+                    times: ["09:00"] // temp default
+                });
+            }
+        });
+
+        res.json({
+            extractedText,
+            medicines
+        });
 
     } catch (error) {
         console.error("OCR ERROR:", error);
