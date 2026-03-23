@@ -14,6 +14,10 @@ const cron = require("node-cron");
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // Ensure upload folder exists
 const baseUploadDir = path.join(process.cwd(), 'uploads');
 
@@ -77,31 +81,6 @@ const profileStorage = multer.diskStorage({
 });
 
 const uploadPhoto = multer({ storage: profileStorage });
-
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP ERROR:", error);
-    } else {
-        console.log("SMTP READY");
-    }
-});
-
-
 
 router.post('/register', async (req, res) => {
 
@@ -201,16 +180,18 @@ router.post('/login', async (req, res) => {
                 [user.id, otp]
             );
 
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: user.email,
-                subject: "Login OTP",
-                text: `Your login OTP is ${otp}`
-            }).then(info => {
+            try {
+                const info = await resend.emails.send({
+                    from: "onboarding@resend.dev",
+                    to: email,
+                    subject: "OTP",
+                    text: `Your OTP is ${otp}`
+                });
+
                 console.log("EMAIL SENT:", info);
-            }).catch(err => {
-                console.error("EMAIL ERROR FULL:", err);
-            });
+            } catch (err) {
+                console.error("EMAIL ERROR:", err);
+            }
 
             // ALWAYS return this
             return res.json({
@@ -1250,14 +1231,18 @@ router.post("/send-email-otp", authMiddleware, async (req, res) => {
             [userId, otp]
         );
 
-        transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Health Adviser OTP",
-            text: `Your OTP is ${otp}` // ✅ SAFE
-        }).catch(err => {
-            console.error("EMAIL FAILED:", err);
-        });
+        try {
+            const info = await resend.emails.send({
+                from: "onboarding@resend.dev",
+                to: email,
+                subject: "OTP",
+                text: `Your OTP is ${otp}`
+            });
+
+            console.log("EMAIL SENT:", info);
+        } catch (err) {
+            console.error("EMAIL ERROR:", err);
+        }
 
         res.json({ message: "OTP sent" }); // ✅ IMPORTANT
 
@@ -1435,14 +1420,19 @@ router.post("/send-otp", async (req, res) => {
             [userId, otp]
         );
 
-        transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Password Reset OTP",
-            text: `Your OTP is ${otp}`
-        }).catch(err => {
-            console.error("EMAIL FAILED:", err);
-        });
+        try {
+            const info = await resend.emails.send({
+                from: "onboarding@resend.dev",
+                to: email,
+                subject: "OTP",
+                text: `Your OTP is ${otp}`
+            });
+
+            console.log("EMAIL SENT:", info);
+        } catch (err) {
+            console.error("EMAIL ERROR:", err);
+        }
+
 
 
         res.json({ message: "OTP sent" });
