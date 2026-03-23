@@ -81,6 +81,7 @@ export class UploadReportsComponent {
 
   async analyzeReport(id: number) {
 
+
     if (this.reportAnalysisMap[id]) {
       delete this.reportAnalysisMap[id];
       return;
@@ -89,248 +90,135 @@ export class UploadReportsComponent {
     this.reportLoadingId = id;
 
     try {
-
-      // ✅ CALL BACKEND ONLY FOR TEXT
       const res: any = await this.http
         .get(`${environment.apiUrl}/api/auth/analyze-report/${id}?t=${Date.now()}`)
         .toPromise();
 
-      let fullText = res.extractedText || '';
+      let text = res.extractedText || '';
 
-      // ✅ SAME OLD CLEANING (VERY IMPORTANT)
-      fullText = fullText
+      text = text
         .replace(/Total Iron Binding Capacity/gi, "TIBC")
-        .replace(/µg\/dl/gi, "µg/dL")
-        .replace(/ug\/dl/gi, "µg/dL")
+        .replace(/µg\/dl|ug\/dl/gi, "µg/dL")
         .replace(/pg\/ml/gi, "pg/mL")
         .replace(/ng\/ml/gi, "ng/mL");
 
-      // ✅ YOUR ORIGINAL MAGIC
-      const normalizedText = this.normalizeReportText(fullText);
-      const metrics = this.extractMedicalMetrics(normalizedText);
-      const reportType = this.detectReportType(fullText);
+      const isTableFormat =
+        /:\s*\d+\.?\d*\s*[a-z%\/]+\s*\d+\.?\d*\s*-\s*\d+/i.test(text);
 
-      this.reportAnalysisMap[id] = {
-        reportType,
-        metrics
-      };
+      let metrics;
 
+      if (isTableFormat) {
+        metrics = this.parseTableReport(text);
+      } else {
+        metrics = this.parseMetrics(text);
+      } const reportType = this.detectReportType(text);
+
+      this.reportAnalysisMap[id] = { reportType, metrics };
+      console.log("RAW TEXT:\n", text);
     } catch (err) {
-      console.error("ANALYSIS ERROR:", err);
+      console.error(err);
       this.alert.error("Report analysis failed");
     }
 
     this.reportLoadingId = null;
   }
-  extractMedicalMetrics(text: string) {
+
+
+  parseTableReport(text: string) {
 
     const metrics: any[] = [];
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
 
-    const tokens = text
-      .replace(/\s{2,}/g, '\n')
-      .split('\n')
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
+    for (let i = 0; i < lines.length; i++) {
 
-    for (let i = 0; i < tokens.length; i++) {
+      let nameLine = lines[i];
 
-      let name = tokens[i];
-      if (/page\s*\d+/i.test(name)) continue;
-      const sectionHeaders = [
-        "chemical test",
-        "microscopic test",
-        "physical examination",
-        "lipid profile",
-        "haemogram",
-        "electrolytes",
-        "biochemistry",
-        "department",
-        "investigation",
-        "self pay"
-      ];
+      if (
+        nameLine.toLowerCase().includes("haemogram") ||
+        nameLine.toLowerCase().includes("department") ||
+        nameLine.toLowerCase().includes("investigation")
+      ) {
+        continue;
+      }
 
-      if (sectionHeaders.some(h => name.toLowerCase().includes(h))) continue;
-      const unitTokens = [
-        "ng/ml", "pg/ml", "µg/dl", "mg/dl", "%", "fl", "pg",
-        "cells/ul", "x10³cells/ul", "million/ul", "g/dl",
-        "mmol/l", "mmol/l.", "mmol/l:",
-        "/ul", "mm/hr", "u/l", "iu/ml"
-      ];
+      if (
+        lines[i + 1] &&
+        !lines[i + 1].toLowerCase().includes("method") &&
+        lines[i + 1] !== ":" &&
+        lines[i].toUpperCase() === lines[i] 
+      ) {
+        nameLine = lines[i + 1];
+      }
+      if (
+        nameLine.toLowerCase().includes("method") ||
+        nameLine === ":" ||
+        nameLine.length < 3
+      ) continue;
 
-      if (unitTokens.includes(name.toLowerCase())) continue;
-      // detect pattern: Test : value unit range
-      const inlineMatch = name.match(
-        /^([A-Za-z\s\(\)\/\-\.,]+)\s*:\s*([\d\.]+)\s*([A-Za-z%\/³]+)\s*([\d\.]+\s*-\s*[\d\.]+)/
-      );
+      let colonIndex = -1;
 
-      if (inlineMatch) {
-        const metricName = inlineMatch[1].trim();
-        const value = parseFloat(inlineMatch[2]);
-        const unit = inlineMatch[3];
-        const range = inlineMatch[4];
+      for (let j = 1; j <= 3; j++) {
+        if (lines[i + j] === ":") {
+          colonIndex = i + j;
+          break;
+        }
+      }
+
+      if (colonIndex !== -1 && lines[colonIndex + 1]) {
+
+        const dataLine = lines[colonIndex + 1];
+
+        const match = dataLine.match(
+          /(\d+\.?\d*)\s*(x10³\s*[a-zA-Z\/]+|[a-zA-Z%\/]+)\s*(\d+\.?\d*\s*-\s*\d+\.?\d*)/
+        );
+
+        if (!match) continue;
+
+        const name = this.normalizeTestName(nameLine);
+        const value = parseFloat(match[1]);
+        const unit = match[2].replace(/\s+/g, ' ').trim();
+        const range = match[3];
+
+        if (
+          !name ||
+          name.length > 50 ||
+          name.toLowerCase().includes("department") ||
+          name.toLowerCase().includes("investigation")
+        ) continue;
+
+        if (metrics.some(m => m.name === name)) continue;
 
         metrics.push({
           name,
           value,
           unit,
           range,
-          status: getStatus(value, range),
-          wikiLoaded: false,
-          wikiLink: ""
+          status: getStatus(value, range)
         });
 
-        continue;
+        i = colonIndex + 1;
       }
-      const invalidNames = [
-        "clear",
-        "pale yellow",
-        "absent",
-        "present",
-        "normal"
-      ];
-
-      if (invalidNames.includes(name.toLowerCase())) continue;
-
-      if (!/[a-zA-Z]{3,}/.test(name)) continue;
-
-      if (name.toLowerCase().includes("method")) continue;
-
-      let value: number | null = null;
-      let unit = "";
-      let range = "";
-
-      for (let j = i + 1; j < i + 6 && j < tokens.length; j++) {
-
-        const t = tokens[j];
-        // skip method lines
-        if (t.toLowerCase().includes("method")) continue;
-        if (t.toLowerCase().includes("clia")) continue;
-        if (/^[a-zA-Z\/%]+$/.test(name) && tokens[i + 1]?.match(/^\d/)) continue;
-        // detect value + unit on same line
-        const valueUnitMatch = t.match(/^(\d+(\.\d+)?)\s*([a-zA-Z%\/³]+)/);
-        if (value === null && valueUnitMatch) {
-          value = parseFloat(valueUnitMatch[1]);
-          unit = valueUnitMatch[3];
-          continue;
-        }
-
-        // detect range first
-        if (range === "" && /^\d+(\.\d+)?\s*-\s*\d+(\.\d+)?/.test(t)) {
-          range = t;
-          continue;
-        }
-
-        // detect unit
-        // detect unit but avoid next test name
-        if (
-          unit === "" &&
-          /[a-zA-Z%\/³]/.test(t) &&
-          !/^\d/.test(t) &&
-          !/[A-Za-z]{3,}\s+[A-Za-z]{3,}/.test(t) &&
-          !/gamma|ratio/i.test(t)
-        ) {
-          unit = t;
-          continue;
-        }
-        // detect numeric value
-        if (/^\d+\.?\d*$/.test(t)) {
-          value = parseFloat(t);
-        }
-
-      }
-
-      // must have value + range
-      if (value === null || range === "") continue;
-
-      // name should not be long sentence
-      if (name.split(" ").length > 10) continue;
-
-      // ignore brackets like (CLIA) or (Microscopy)
-      if (/^\(.*\)$/.test(name)) continue;
-
-      // ignore notes/comments words
-      const ignore = [
-        "note",
-        "comment",
-        "management",
-        "deficiency",
-        "disease",
-        "pregnancy",
-        "toxicity"
-      ];
-      const sectionWords = [
-        "note",
-        "notes",
-        "comments",
-        "decreased levels",
-        "increased levels",
-        "management",
-        "deficiency",
-        "disease",
-        "pregnancy",
-        "toxicity"
-      ];
-      const unitLike = [
-        "ng/ml",
-        "pg/ml",
-        "µg/dl",
-        "mg/dl",
-        "%",
-        "fl",
-        "pg",
-        "cells/ul"
-      ];
-
-      if (unitLike.includes(name.toLowerCase())) continue;
-      if (sectionWords.some(w => name.toLowerCase().includes(w))) continue;
-
-      if (ignore.some(w => name.toLowerCase().includes(w))) continue;
-      const normalizedName = name
-        .toLowerCase()
-        .replace(/serum|plasma/g, "")
-        .replace(/phosphorous/g, "phosphorus")
-        .replace(/bilirubin direct/g, "directbilirubin")
-        .replace(/bilirubin total/g, "totalbilirubin")
-        .replace(/[^a-z]/g, "")
-        .trim();
-      const exists = metrics.some(m => {
-
-        const existing = m.name
-          .toLowerCase()
-          .replace(/serum|plasma/g, "")
-          .replace(/phosphorous/g, "phosphorus")
-          .replace(/[^a-z]/g, "")
-          .trim();
-
-        return existing === normalizedName;
-
-      });
-
-      if (exists) continue;
-      if (
-        name.toLowerCase().includes("studies") ||
-        name.toLowerCase().includes("picture") ||
-        name.toLowerCase().includes("examination")
-      ) continue;
-
-      // valid lab test name pattern
-      name = name
-        .replace(/\(.*?\)/g, "")
-        .replace(/,\s*serum/i, "")
-        .trim();
-      // reject very long names (comments)
-      if (name.length > 40) continue;
-      metrics.push({
-        name,
-        value,
-        unit,
-        range,
-        status: getStatus(value, range)
-      });
-
     }
 
     return metrics;
+  }
+
+  cleanLines(text: string): string[] {
+    return text
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l =>
+        l.length > 5 &&
+
+        //  remove headers
+        !/test name|results|units|bio|interval/i.test(l) &&
+
+        //  remove report junk
+        !/report|note|comment|page|lab|collected|processed/i.test(l) &&
+
+        // remove paragraphs
+        l.split(" ").length < 12
+      );
   }
 
   detectReportType(text: string) {
@@ -357,44 +245,145 @@ export class UploadReportsComponent {
 
   }
 
+  parseMetrics(text: string) {
 
-  simplifyMetricName(name: string): string {
+    const metrics: any[] = [];
+
+    const blocks = text
+      .split(/\n(?=[A-Z][A-Za-z\s\(\),;-]{5,})/g); 
+
+    for (let block of blocks) {
+
+      const lower = block.toLowerCase();
+
+      let name = this.normalizeTestName(block);
+
+      if (!name || name.length > 40) continue;
+
+      // ---- VALUE ----
+      let valueMatch = block.match(/(\d+\.?\d*)\s*(?=(µg\/dL|mg\/dL|ng\/mL|pg\/mL|%))/i)
+        || block.match(/(µg\/dL|mg\/dL|ng\/mL|pg\/mL|%)\s*(\d+\.?\d*)/i)
+        || block.match(/\n(\d+\.?\d*)\n/);
+
+      // ---- RANGE ----
+      let rangeMatch = block.match(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/);
+
+      // ---- UNIT ----
+      let unitMatch = block.match(/(µg\/dL|mg\/dL|ng\/mL|pg\/mL|%)/i);
+
+      if (!valueMatch || !rangeMatch || !unitMatch) continue;
+
+      const min = parseFloat(rangeMatch[1]);
+      const max = parseFloat(rangeMatch[2]);
+
+      // find unit position
+      const unitIndex = block.search(/(µg\/dL|mg\/dL|ng\/mL|pg\/mL|%)/i);
+
+      // get substring AFTER unit (most reliable for value)
+      const afterUnit = block.slice(unitIndex);
+
+      // extract numbers AFTER unit
+      let numsAfterUnit = [];
+
+      // handle merged decimals like 24.806.20
+      const mergedMatch = afterUnit.match(/(\d+\.\d{2})(\d+\.\d{2})/);
+
+      if (mergedMatch) {
+        numsAfterUnit = [
+          parseFloat(mergedMatch[1]),
+          parseFloat(mergedMatch[2])
+        ];
+      } else {
+        numsAfterUnit = afterUnit.match(/\d+\.?\d*/g)?.map(n => parseFloat(n)) || [];
+      }
+      // remove range numbers
+      let value = numsAfterUnit.find(n =>
+        Math.abs(n - min) > 0.01 &&
+        Math.abs(n - max) > 0.01
+      );
+
+      // fallback if still not found
+      if (!value) {
+        const allNums = block.match(/\d+\.?\d*/g)?.map(n => parseFloat(n)) || [];
+        value = allNums[allNums.length - 1];
+      }
+
+      if (!value) continue;
+
+      let range = `${rangeMatch[1]}-${rangeMatch[2]}`;
+      let unit = unitMatch[1];
+
+      // sanity fix (avoid picking range as value)
+
+      if (value === min || value === max) {
+        const nums = block.match(/\d+\.?\d*/g);
+        if (nums && nums.length >= 3) {
+          value = parseFloat(nums[nums.length - 1]);
+        }
+      }
+
+      // dedupe
+      if (metrics.some(m => m.name === name)) continue;
+
+      metrics.push({
+        name,
+        value,
+        unit,
+        range,
+        status: getStatus(value, range)
+      });
+    }
+
+    return metrics;
+  }
+
+
+  normalizeTestName(name: string): string {
+    name = name.replace(/\./g, " "); 
+    const map: any = {
+      // existing
+      "ferritin": "Ferritin",
+      "iron": "Iron",
+      "tibc": "TIBC",
+      "transferrin saturation": "Transferrin Saturation",
+      "vitamin b12": "Vitamin B12",
+      "cyanocobalamin": "Vitamin B12",
+      "folate": "Folate",
+
+      // 🔥 ADD THESE
+      "wbc": "WBC Count",
+      "wbc count": "WBC Count",
+      "wbccount": "WBC Count",
+
+      "rbc": "RBC Count",
+      "rbccount": "RBC Count",
+
+      "haemoglobin": "Hemoglobin",
+      "hemoglobin": "Hemoglobin",
+
+      "haematocrit": "Hematocrit",
+      "hematocrit": "Hematocrit",
+
+      "platelet": "Platelet Count",
+      "platelet count": "Platelet Count",
+
+      "neutrophils": "Neutrophils",
+      "lymphocytes": "Lymphocytes",
+      "monocytes": "Monocytes",
+      "eosinophils": "Eosinophils",
+      "basophils": "Basophils"
+    };
+    const clean = name.toLowerCase();
+
+    for (let key in map) {
+      if (clean.includes(key)) return map[key];
+    }
 
     return name
-      .toLowerCase()
-
-      // remove brackets
       .replace(/\(.*?\)/g, "")
-
-      // remove common lab words
-      .replace(/\b(serum|plasma|level|levels|test|total|count)\b/g, "")
-
-      // remove symbols
-      .replace(/[^a-z\s]/g, "")
-
-      // remove extra spaces
-      .replace(/\s+/g, " ")
-
+      .replace(/[^a-zA-Z\s\.]/g, "")
       .trim();
   }
-  normalizeReportText(text: string): string {
-
-    return text
-
-      // split inline tests
-      .replace(/([A-Za-z\s]+)\s+(\d+\.\d+|\d+)\s*(mg\/dL|mmol\/L|ng\/mL|pg\/mL|g\/dL|U\/L|%)/gi,
-        "$1\n$2\n$3")
-
-      // split ranges
-      .replace(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/g,
-        "$1-$2")
-
-      // clean extra spaces
-      .replace(/\s{2,}/g, "\n")
-
-      .trim();
-  }
-
 }
 
 function getStatus(value: number, range: string) {

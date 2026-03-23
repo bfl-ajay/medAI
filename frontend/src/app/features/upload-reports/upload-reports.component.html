@@ -37,7 +37,6 @@
       Upload Report
     </button>
 
-
     <!-- ================= REPORT LIST ================= -->
     <div *ngIf="reports.length > 0">
       <h3><i class="fa-solid fa-file-lines"></i> Your Uploaded Reports</h3>
@@ -69,7 +68,7 @@
           </div>
 
           <!-- Loading -->
-          <div  class="analysis-loading"> <i class="fa-solid fa-spinner fa-spin"></i>
+          <div *ngIf="reportLoadingId === r.id" class="analysis-loading"> <i class="fa-solid fa-spinner fa-spin"></i>
             Analyzing Report...
           </div>
 
@@ -105,8 +104,8 @@
                     <div class="stat-box">
                       <span class="label">Your Result</span>
                       <span class="value">
-                        {{ m.value }} {{ m.unit }}
-                      </span>
+                        {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                       </span>
                     </div>
 
                     <div class="stat-box">
