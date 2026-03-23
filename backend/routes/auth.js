@@ -978,32 +978,36 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
 
             const line = lines[i];
 
-            // 🔥 Skip obvious junk
-            if (
-                line.toLowerCase().includes('doctor') ||
-                line.toLowerCase().includes('hospital') ||
-                line.toLowerCase().includes('clinic') ||
-                line.toLowerCase().includes('patient')
-            ) continue;
+            const dosageMatch = line.match(/\d+\s?mg/i);
 
-            // 🔥 Find dosage pattern
-            const hasDosage = /\d+\s?mg/i.test(line);
+            if (dosageMatch) {
 
-            if (hasDosage) {
+                let dosage = dosageMatch[0];
 
-                // Try extracting name
-                let name = line.replace(/\d+\s?mg/gi, '').trim();
+                // 🔥 try previous line as medicine name
+                let prevLine = lines[i - 1] || '';
 
-                // Clean symbols
-                name = name.replace(/[^a-zA-Z\s]/g, '').trim();
+                // clean previous line
+                let name = prevLine
+                    .replace(/[^a-zA-Z\s]/g, '')
+                    .trim();
 
-                if (name.length > 2) {
-                    medicines.push({
-                        name,
-                        dosage: line.match(/\d+\s?mg/i)?.[0] || '',
-                        times: ["09:00"]
-                    });
+                // 🚫 avoid bad names
+                if (
+                    name.length < 3 ||
+                    name.toLowerCase().includes('doctor') ||
+                    name.toLowerCase().includes('hospital') ||
+                    name.toLowerCase().includes('clinic') ||
+                    name.toLowerCase().includes('dosage')
+                ) {
+                    continue;
                 }
+
+                medicines.push({
+                    name,
+                    dosage,
+                    times: ["09:00"]
+                });
             }
         }
 
