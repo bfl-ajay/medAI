@@ -6,9 +6,10 @@ import { DiseaseService } from 'src/app/core/services/disease.service';
 import { Chart } from 'chart.js/auto';
 import { AlertService } from 'src/app/core/services/alert.service';
 import { ActivatedRoute } from '@angular/router';
-import { environment
-    
- } from 'src/environments/environment';
+import {
+    environment
+
+} from 'src/environments/environment';
 @Component({
     selector: 'app-profile',
     templateUrl: './profile.component.html',
@@ -43,6 +44,7 @@ export class ProfileComponent {
     confirmPassword = '';
     recoveryEmail: string = '';
     latestInfo: any;
+    isEditingRecoveryEmail: boolean = false;
 
     get profileCompletion(): number {
         return this.getProfileCompletion();
@@ -598,27 +600,7 @@ export class ProfileComponent {
         });
 
     }
-    saveRecoveryEmail() {
 
-        if (!this.recoveryEmail) {
-            this.alert.warning("Please enter a recovery email");
-            return;
-        }
-
-        this.authService.updateRecoveryEmail(this.recoveryEmail).subscribe({
-
-            next: () => {
-                this.alert.success("Recovery email saved successfully");
-            },
-
-            error: (err) => {
-                console.error(err);
-                this.alert.error("Failed to save recovery email");
-            }
-
-        });
-
-    }
 
     deactivateAccount() {
 
@@ -664,6 +646,29 @@ export class ProfileComponent {
         if (this.user?.height && this.user?.weight) completed++;
 
         return Math.round((completed / total) * 100);
+
+    }
+
+    enableEditRecoveryEmail() {
+        this.isEditingRecoveryEmail = true;
+    }
+
+    saveRecoveryEmail() {
+
+        if (!this.recoveryEmail) {
+            this.alert.warning("Enter recovery email");
+            return;
+        }
+
+        this.authService.updateRecoveryEmail(this.recoveryEmail).subscribe({
+            next: () => {
+                this.alert.success("Recovery email saved");
+                this.isEditingRecoveryEmail = false; // 🔥 back to view mode
+            },
+            error: () => {
+                this.alert.error("Failed to save");
+            }
+        });
 
     }
 

@@ -6,7 +6,7 @@ const sendRecoveryEmailAdded = async (toEmail) => {
     try {
         const response = await resend.emails.send({
             from: 'MedAI <onboarding@resend.dev>',
-            to: toEmail,
+            to: "swatinugula56@gmail.com",
             subject: 'Recovery Email Added',
             html: `<h2>Recovery Email Added</h2>`
         });

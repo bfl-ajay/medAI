@@ -395,9 +395,16 @@
 
           <div class="settings-right recovery-form">
 
-            <input type="email" placeholder="example@email.com" [(ngModel)]="recoveryEmail">
+            <input type="email" [(ngModel)]="recoveryEmail" [disabled]="!isEditingRecoveryEmail"
+              placeholder="example@email.com">
 
-            <button class="outline-btn" (click)="saveRecoveryEmail()">
+            <!-- EDIT BUTTON -->
+            <button class="icon-btn" *ngIf="!isEditingRecoveryEmail" (click)="enableEditRecoveryEmail()">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+
+            <!-- SAVE BUTTON -->
+            <button class="outline-btn" *ngIf="isEditingRecoveryEmail" (click)="saveRecoveryEmail()">
               Save
             </button>
 

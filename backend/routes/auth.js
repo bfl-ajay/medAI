@@ -259,7 +259,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
                 bloodGroup,
                 known_diseases,
                 photo,
-                two_factor_enabled
+                two_factor_enabled,
+                 recovery_email 
             FROM users
             WHERE id = ?
         `;
@@ -345,6 +346,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             knownDiseases: diseases,
             healthScore,
             email: user.email,
+            recovery_email: user.recovery_email,
             two_factor_enabled: user.two_factor_enabled,
             email_verified: user.email_verified,
             photo: user.photo
@@ -950,7 +952,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Prescription not found" });
         }
 
-        path.join(prescriptionDir, rows[0].file_path)
+        const filePath = path.join(prescriptionDir, rows[0].file_path);
 
         const result = await Tesseract.recognize(filePath, "eng");
         const extractedText = result.data.text;
@@ -1519,36 +1521,12 @@ router.post('/update-recovery-email', authMiddleware, async (req, res) => {
 
     try {
 
-        await db.query(
+        await db.execute(
             `UPDATE users SET recovery_email = ? WHERE id = ?`,
             [recoveryEmail, userId]
         );
 
-        res.json({ message: "Recovery email updated" });
-
-    } catch (err) {
-
-        console.error(err);
-        res.status(500).json({ error: "Server error" });
-
-    }
-
-});
-
-
-router.post('/update-recovery-email', authMiddleware, async (req, res) => {
-
-    const userId = req.user.id;
-    const { recoveryEmail } = req.body;
-
-    try {
-
-        await db.query(
-            `UPDATE users SET recovery_email = ? WHERE id = ?`,
-            [recoveryEmail, userId]
-        );
-
-        // 🔥 SEND EMAIL VIA RESEND
+        // 🔥 SEND EMAIL
         await sendRecoveryEmailAdded(recoveryEmail);
 
         res.json({ message: "Recovery email updated" });
@@ -1561,6 +1539,7 @@ router.post('/update-recovery-email', authMiddleware, async (req, res) => {
     }
 
 });
+
 
 router.post('/deactivate-account', authMiddleware, async (req, res) => {
 

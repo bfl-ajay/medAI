@@ -132,12 +132,10 @@ export class AuthService {
     getCurrentUser() {
         return this.userSubject.value;
     }
-
     updateRecoveryEmail(email: string) {
-        return this.http.post(
-            `${this.apiUrl}/api/auth/update-recovery-email`,
-            { email }
-        );
+        return this.http.post(`${environment.apiUrl}/api/auth/update-recovery-email`, {
+            recoveryEmail: email
+        });
     }
 
     deactivateAccount() {
