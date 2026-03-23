@@ -19,6 +19,14 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 const { sendRecoveryEmailAdded } = require('../routes/util.js');
 
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Ensure upload folder exists
 const baseUploadDir = path.join(process.cwd(), 'uploads');
@@ -52,20 +60,17 @@ if (!fs.existsSync(prescriptionDir)) {
 }
 
 // Prescription storage
-const prescriptionStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, prescriptionDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + file.originalname;
-        cb(null, uniqueName);
+const prescriptionStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'prescriptions',
+        resource_type: 'auto' // supports pdf + images
     }
 });
 
-const uploadPrescription = multer({
-    storage: prescriptionStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }
-});
+const uploadPrescription = multer({ storage: prescriptionStorage });
+
+
 
 
 if (!fs.existsSync(profileDir)) {
@@ -736,14 +741,17 @@ router.post(
                 VALUES (?, ?, ?, ?, ?)
             `;
 
-            await db.execute(sql, [
-                userId,
-                req.file.originalname,
-                req.file.filename,
-                doctorName,
-                notes
-            ]);
-
+            await db.execute(
+                `INSERT INTO prescriptions (user_id, file_name, file_url, doctor_name, notes)
+     VALUES (?, ?, ?, ?, ?)`,
+                [
+                    userId,
+                    req.file.originalname,
+                    req.file.path,
+                    doctorName,
+                    notes
+                ]
+            );
             res.json({ message: "Prescription uploaded successfully" });
 
         } catch (err) {
@@ -954,6 +962,12 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
 
         const fileUrl = rows[0].file_url;
 
+        if (!fileUrl) {
+            return res.status(400).json({
+                message: "Old file not supported. Please re-upload."
+            });
+        }
+
         const result = await Tesseract.recognize(fileUrl, "eng");
 
         const extractedText = result.data.text;
@@ -965,7 +979,6 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Server error during OCR" });
     }
 });
-
 router.post('/blood_pressure_records', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
