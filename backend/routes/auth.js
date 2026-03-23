@@ -944,7 +944,7 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
         const userId = req.user.id;
 
         const [rows] = await db.execute(
-            "SELECT * FROM prescriptions WHERE id = ? AND user_id = ?",
+            "SELECT file_url FROM prescriptions WHERE id = ? AND user_id = ?",
             [prescriptionId, userId]
         );
 
@@ -952,74 +952,13 @@ router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Prescription not found" });
         }
 
-        const filePath = path.join(prescriptionDir, rows[0].file_path);
+        const fileUrl = rows[0].file_url;
 
-        const result = await Tesseract.recognize(filePath, "eng");
+        const result = await Tesseract.recognize(fileUrl, "eng");
+
         const extractedText = result.data.text;
 
-        if (!extractedText) {
-            return res.json({
-                message: "No readable text found in image."
-            });
-        }
-
-        const lines = extractedText.split("\n");
-        const parsedMedicines = [];
-
-        let currentMedicine = null;
-        let currentDosage = null;
-        let currentTimes = [];
-
-        function convertFrequency(text) {
-            const lower = text.toLowerCase();
-            if (lower.includes("three")) return ["08:00", "13:00", "20:00"];
-            if (lower.includes("twice")) return ["08:00", "20:00"];
-            if (lower.includes("once")) return ["08:00"];
-            if (lower.includes("as needed")) return ["PRN"];
-            return ["08:00"];
-        }
-
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-
-            const medMatch = line.match(/^\d+\.\s*(.+)/);
-            if (medMatch) {
-                currentMedicine = medMatch[1].trim();
-                continue;
-            }
-
-            if (line.toLowerCase().includes("dosage")) {
-                const dosageMatch = line.match(
-                    /(\d+\s?(mg|ml|units|iu|puffs?|tablets?|capsules?|drops?))/i
-                );
-                if (dosageMatch) {
-                    currentDosage = dosageMatch[0];
-                }
-                continue;
-            }
-
-            if (line.toLowerCase().includes("frequency")) {
-                currentTimes = convertFrequency(line);
-
-                if (currentMedicine && currentDosage) {
-                    parsedMedicines.push({
-                        name: currentMedicine,
-                        dosage: currentDosage,
-                        times: currentTimes
-                    });
-                }
-
-                currentMedicine = null;
-                currentDosage = null;
-                currentTimes = [];
-            }
-        }
-
-        res.json({
-            extractedText,
-            medicines: parsedMedicines
-        });
+        res.json({ extractedText });
 
     } catch (error) {
         console.error("OCR ERROR:", error);
