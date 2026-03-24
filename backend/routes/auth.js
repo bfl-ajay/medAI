@@ -37,23 +37,19 @@ const profileDir = path.join(baseUploadDir, 'profile');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
+const reportStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
 
-// Multer config
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + file.originalname;
-        cb(null, uniqueName);
+        const isPDF = file.mimetype === 'application/pdf';
+
+        return {
+            folder: 'reports',
+            resource_type: isPDF ? 'raw' : 'image'
+        };
     }
 });
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-});
-
+const upload = multer({ storage: reportStorage });
 // Prescription folder
 if (!fs.existsSync(prescriptionDir)) {
     fs.mkdirSync(prescriptionDir, { recursive: true });
@@ -668,7 +664,7 @@ router.post(
             await db.execute(sql, [
                 userId,
                 req.file.originalname,
-                req.file.filename
+                req.file.path
             ]);
 
             res.json({ message: "Report uploaded successfully" });
@@ -888,6 +884,7 @@ router.post('/save-add-info', authMiddleware, async (req, res) => {
 });
 
 router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
+
     try {
         const reportId = req.params.id;
         const userId = req.user.id;
@@ -904,26 +901,23 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Report not found" });
         }
 
-        const filePath = path.join(
-            uploadDir,
-            rows[0].file_path
-        );
+        const fileUrl = rows[0].file_path;
 
         // 🔥 DEBUG LOGS (ADD THIS)
         console.log("==== ANALYZE DEBUG ====");
-        console.log("Requested file:", rows[0].file_path);
-        console.log("Full path:", filePath);
-        console.log("File exists:", fs.existsSync(filePath));
+        console.log("Cloudinary URL:", fileUrl);
         console.log("=======================");
 
         let extractedText = "";
 
-        if (filePath.endsWith('.pdf')) {
-            const dataBuffer = fs.readFileSync(filePath);
-            const pdfData = await pdf(dataBuffer);
+        const isPDF = fileUrl.includes('/raw/upload/');
+
+        if (isPDF) {
+            const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+            const pdfData = await pdf(response.data);
             extractedText = pdfData.text;
         } else {
-            const result = await Tesseract.recognize(filePath, 'eng');
+            const result = await Tesseract.recognize(fileUrl, 'eng');
             extractedText = result.data.text;
         }
 
@@ -938,6 +932,7 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
         console.error("ANALYZE REPORT ERROR:", error);
         res.status(500).json({ message: "Failed to analyze report" });
     }
+
 });
 
 router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
@@ -1160,6 +1155,7 @@ router.post('/contact', async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        // ✅ Save to DB
         const sql = `
             INSERT INTO contact_messages (name, email, message, contact)
             VALUES (?, ?, ?, ?)
@@ -1167,6 +1163,46 @@ router.post('/contact', async (req, res) => {
 
         await db.execute(sql, [name, email, message, contact]);
 
+        // 🔥 SEND EMAIL TO OWNER
+        try {
+            await resend.emails.send({
+                from: "onboarding@resend.dev",
+                to: process.env.EMAIL_USER,
+                subject: "📩 New Contact Message",
+                html: `
+                    <div style="font-family: Arial; padding: 20px;">
+                        <h2 style="color:#458FF6;">New Contact Message</h2>
+                        <p><b>Name:</b> ${name}</p>
+                        <p><b>Email:</b> ${email}</p>
+                        <p><b>Phone:</b> ${contact}</p>
+                        <hr/>
+                        <p>${message}</p>
+                    </div>
+                `
+            });
+            console.log("Sending email to:", email);
+            console.log("Owner email sent");
+
+        } catch (err) {
+            console.error("OWNER EMAIL ERROR:", err);
+        }
+
+        // 🔥 SEND CONFIRMATION TO USER
+        try {
+            await resend.emails.send({
+                from: "onboarding@resend.dev",
+                to: email,
+                subject: "We received your message",
+                text: `Hi ${name}, we received your message and will get back to you soon.`
+            });
+
+            console.log("User confirmation email sent");
+
+        } catch (err) {
+            console.error("USER EMAIL ERROR:", err);
+        }
+
+        // ✅ FINAL RESPONSE (AFTER EVERYTHING)
         res.json({ message: "Message sent successfully" });
 
     } catch (err) {

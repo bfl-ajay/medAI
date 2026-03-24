@@ -75,6 +75,7 @@ export class UploadReportsComponent {
         this.uploading = false;
         this.alert.error("Upload failed");
       }
+      
     });
   }
 

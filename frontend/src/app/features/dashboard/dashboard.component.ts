@@ -205,22 +205,21 @@ export class DashboardComponent implements OnInit {
 
     const cacheKey = 'ai_plan';
 
-    // ✅ CACHE HIT
+    // CACHE HIT
     const cached = this.cache.get<any>(cacheKey);
     if (cached) {
       console.log('Plan from cache 🚀');
       this.aiPlan = cached;
       return;
     }
-
-    // ❌ CACHE MISS
+    //  CACHE MISS
     this.isPlanLoading = true;
 
     this.authService.getAIPlan(this.profile).subscribe({
       next: (res: any) => {
         this.aiPlan = res;
 
-        // 🔥 STORE CACHE
+        //  STORE CACHE
         this.cache.set(cacheKey, res);
 
         this.isPlanLoading = false;

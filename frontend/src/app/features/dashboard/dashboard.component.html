@@ -66,7 +66,7 @@
 
     <div class="pc-header">
       <h2>
-        <i class="fa-solid fa-stethoscope"></i>
+      
         Medical Profile
       </h2>
 
@@ -116,7 +116,6 @@
   <div class="card health-info-card" *ngIf="latestInfo">
 
     <h3>
-      <i class="fa-solid fa-brain"></i>
       Health Alerts & Information
     </h3>
     <div class="info-grid">
@@ -182,7 +181,6 @@
   <!-- ===== BLOOD PRESSURE TRACKER ===== -->
   <div class="card">
     <h3>
-      <i class="fa-solid fa-heart-pulse"></i>
       Blood Pressure Tracker
     </h3>
     <div class="bp-add-section">
@@ -291,7 +289,6 @@
   <!-- ===== HEALTH SCORE ===== -->
   <div class="card">
     <h3>
-      <i class="fa-solid fa-star"></i>
       Health Score
     </h3>
     <div class="progress">
@@ -309,7 +306,6 @@
   <div class="card">
     <div>
       <h3>
-        <i class="fa-solid fa-robot"></i>
         AI-Powered Health Plan
       </h3> <button class="default-btn" (click)="onGetPlanClick()">
 
@@ -370,7 +366,7 @@
 
   <!-- ===== PRESCRIPTIONS ===== -->
   <div class="card">
-    <h3> <i class="fa-solid fa-file-medical"></i> Your Prescriptions</h3>
+    <h3>  Your Prescriptions</h3>
 
     <div *ngIf="prescriptions.length > 0; else noPrescriptions">
       <div *ngFor="let p of prescriptions" class="prescription-row">
@@ -388,11 +384,11 @@
             <ng-container *ngIf="analyzingPrescriptionId !== p.id">
 
               <ng-container *ngIf="selectedPrescriptionId === p.id; else viewBtn">
-                <i class="fa-solid fa-eye-slash"></i>
+                <i class="fa-solid fa-eye-slash"></i> Hide
               </ng-container>
 
               <ng-template #viewBtn>
-                <i class="fa-solid fa-eye"></i>
+                <i class="fa-solid fa-eye"></i> view
               </ng-template>
 
             </ng-container>
@@ -421,8 +417,7 @@
 
   <!-- ===== MEDICINE REMINDER ===== -->
   <div class="card">
-    <h3> <i class="fa-solid fa-bell"></i>
-      Medicine Reminder</h3>
+     <h3> Medicine Reminder</h3>
 
     <div *ngIf="medicines.length > 0">
       <div *ngFor="let med of medicines">
