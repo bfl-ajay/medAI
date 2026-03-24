@@ -50,12 +50,22 @@
 
       </label>
 
-      <button class="submit-btn" (click)="submit()" [disabled]="!selectedFile">
+      <button class="submit-btn" (click)="submit()" [disabled]="!selectedFile || uploading">
 
-        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-        Upload Prescription
+        <!-- LOADING -->
+        <ng-container *ngIf="uploading">
+          <i class="fa-solid fa-spinner fa-spin"></i> Uploading...
+        </ng-container>
+
+        <!-- NORMAL -->
+        <ng-container *ngIf="!uploading">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          Upload Prescription
+        </ng-container>
 
       </button>
+
+
 
 
 
@@ -90,7 +100,7 @@
 
               <div class="action-buttons">
 
-                <button class="analyze-btn" (click)="analyzePrescription(p.id)">
+                <button class="analyze-btn" (click)="onAnalyzeClick(p.id)">
                   <i class="fa-solid" [ngClass]="analysisMap[p.id] ? 'fa-eye-slash' : 'fa-microscope'"></i> Analyze
                 </button>
 

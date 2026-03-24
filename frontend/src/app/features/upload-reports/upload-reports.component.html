@@ -57,7 +57,7 @@
             </div>
 
             <div class="action-buttons">
-              <button type="button" class="analyze-btn" (click)="analyzeReport(r.id)">
+              <button type="button" class="analyze-btn" (click)="onAnalyzeClick(r.id)">
                 <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'"></i> Analyze
                 {{ reportAnalysisMap[r.id] ? '' : '' }}
               </button>
@@ -105,7 +105,7 @@
                       <span class="label">Your Result</span>
                       <span class="value">
                         {{ m.value | number:'1.0-2' }} {{ m.unit }}
-                       </span>
+                      </span>
                     </div>
 
                     <div class="stat-box">

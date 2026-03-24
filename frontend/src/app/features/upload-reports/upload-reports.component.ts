@@ -5,10 +5,15 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { AlertService } from 'src/app/core/services/alert.service';
 import { environment } from 'src/environments/environment';
+import { DebounceService } from 'src/app/core/services/debounce.service';
+import { CacheService } from 'src/app/core/services/cache.service';
 
 import * as pdfjsLib from 'pdfjs-dist';
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+type ReportEvent = { type: 'analyze'; id: number };
+
 
 @Component({
   selector: 'app-upload-reports',
@@ -23,12 +28,27 @@ export class UploadReportsComponent {
   uploadSuccess = false;
   reportAnalysisMap: { [key: number]: any } = {};
   reportLoadingId: number | null = null;
-  constructor(private authService: AuthService, private alert: AlertService, private http: HttpClient
-  ) { }
+  debouncer: any;
 
+
+  constructor(
+    private authService: AuthService,
+    private alert: AlertService,
+    private http: HttpClient,
+    private debounceService: DebounceService,
+    private cache: CacheService
+  ) { }
 
   ngOnInit() {
     this.loadReports();
+
+    this.debouncer = this.debounceService.createDebouncer<ReportEvent>(500);
+
+    this.debouncer.subscribe((event: ReportEvent) => {
+      if (event.type === 'analyze') {
+        this.handleAnalyze(event.id);
+      }
+    });
   }
 
   onFileSelected(event: any) {
@@ -57,9 +77,13 @@ export class UploadReportsComponent {
       }
     });
   }
+
   deleteReport(id: number) {
     this.authService.deleteReport(id).subscribe(() => {
+
+      this.cache.delete(`report_${id}`); 
       this.loadReports();
+
     });
   }
 
@@ -79,14 +103,25 @@ export class UploadReportsComponent {
     }
   }
 
-  async analyzeReport(id: number) {
+  async handleAnalyze(id: number) {
 
-
+    // 🔁 TOGGLE (hide if already open)
     if (this.reportAnalysisMap[id]) {
       delete this.reportAnalysisMap[id];
       return;
     }
 
+    const cacheKey = `report_${id}`;
+
+    // ✅ CACHE HIT
+    const cached = this.cache.get<any>(cacheKey);
+    if (cached) {
+      console.log("Report from cache 🚀");
+      this.reportAnalysisMap[id] = cached;
+      return;
+    }
+
+    // 🔥 LOADING
     this.reportLoadingId = id;
 
     try {
@@ -111,10 +146,17 @@ export class UploadReportsComponent {
         metrics = this.parseTableReport(text);
       } else {
         metrics = this.parseMetrics(text);
-      } const reportType = this.detectReportType(text);
+      }
 
-      this.reportAnalysisMap[id] = { reportType, metrics };
-      console.log("RAW TEXT:\n", text);
+      const reportType = this.detectReportType(text);
+
+      const result = { reportType, metrics };
+
+      // 🔥 STORE CACHE
+      this.cache.set(cacheKey, result);
+
+      this.reportAnalysisMap[id] = result;
+
     } catch (err) {
       console.error(err);
       this.alert.error("Report analysis failed");
@@ -145,7 +187,7 @@ export class UploadReportsComponent {
         lines[i + 1] &&
         !lines[i + 1].toLowerCase().includes("method") &&
         lines[i + 1] !== ":" &&
-        lines[i].toUpperCase() === lines[i] 
+        lines[i].toUpperCase() === lines[i]
       ) {
         nameLine = lines[i + 1];
       }
@@ -250,7 +292,7 @@ export class UploadReportsComponent {
     const metrics: any[] = [];
 
     const blocks = text
-      .split(/\n(?=[A-Z][A-Za-z\s\(\),;-]{5,})/g); 
+      .split(/\n(?=[A-Z][A-Za-z\s\(\),;-]{5,})/g);
 
     for (let block of blocks) {
 
@@ -339,7 +381,7 @@ export class UploadReportsComponent {
 
 
   normalizeTestName(name: string): string {
-    name = name.replace(/\./g, " "); 
+    name = name.replace(/\./g, " ");
     const map: any = {
       // existing
       "ferritin": "Ferritin",
@@ -383,6 +425,10 @@ export class UploadReportsComponent {
       .replace(/\(.*?\)/g, "")
       .replace(/[^a-zA-Z\s\.]/g, "")
       .trim();
+  }
+
+  onAnalyzeClick(id: number) {
+    this.debouncer.next({ type: 'analyze', id });
   }
 }
 

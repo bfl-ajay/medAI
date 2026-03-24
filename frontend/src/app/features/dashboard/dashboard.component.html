@@ -311,7 +311,22 @@
       <h3>
         <i class="fa-solid fa-robot"></i>
         AI-Powered Health Plan
-      </h3> <button class="default-btn" (click)="getPlan()">Generate Plan</button>
+      </h3> <button class="default-btn" (click)="onGetPlanClick()">
+
+        <!-- LOADING -->
+        <ng-container *ngIf="isPlanLoading">
+          <i class="fa-solid fa-spinner fa-spin"></i> Generating...
+        </ng-container>
+
+        <!-- SHOW / HIDE -->
+        <ng-container *ngIf="!isPlanLoading">
+
+          <span *ngIf="!aiPlan">Generate Plan</span>
+          <span *ngIf="aiPlan">Hide Plan</span>
+
+        </ng-container>
+
+      </button>
     </div>
     <div *ngIf="aiPlan" class="ai-output-grid">
       <div class="plan-card">
@@ -362,15 +377,25 @@
         <span class="prescription-name" [title]="p.file_name">
           {{ p.file_name }}</span>
         <div>
-          <button class="default-btn" (click)="togglePrescriptionMedicines(p.id)">
+          <button (click)="onAnalyzeClick(p.id)" class="default-btn">
 
-            <ng-container *ngIf="selectedPrescriptionId === p.id; else viewBtn">
-              <i class="fa-solid fa-eye-slash"></i>
+            <!--  LOADER -->
+            <ng-container *ngIf="analyzingPrescriptionId === p.id">
+              <i class="fa-solid fa-spinner fa-spin"></i>
             </ng-container>
 
-            <ng-template #viewBtn>
-              <i class="fa-solid fa-eye"></i>
-            </ng-template>
+            <!-- NORMAL STATES -->
+            <ng-container *ngIf="analyzingPrescriptionId !== p.id">
+
+              <ng-container *ngIf="selectedPrescriptionId === p.id; else viewBtn">
+                <i class="fa-solid fa-eye-slash"></i>
+              </ng-container>
+
+              <ng-template #viewBtn>
+                <i class="fa-solid fa-eye"></i>
+              </ng-template>
+
+            </ng-container>
 
           </button>
 

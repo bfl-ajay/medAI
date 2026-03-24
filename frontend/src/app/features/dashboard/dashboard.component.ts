@@ -5,6 +5,12 @@ import { Chart } from 'chart.js/auto';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AlertService } from 'src/app/core/services/alert.service';
+import { DebounceService } from 'src/app/core/services/debounce.service';
+import { CacheService } from 'src/app/core/services/cache.service';
+
+type DebounceEvent =
+  | { type: 'analyze'; id: number }
+  | { type: 'plan' };
 
 @Component({
   selector: 'app-dashboard',
@@ -15,7 +21,7 @@ export class DashboardComponent implements OnInit {
 
   profile: any;
   aiPlan: any;
-
+  debouncer: any;
   medicines: any[] = [];
   medicineName: string = '';
   medicineTime: string = '';
@@ -24,11 +30,12 @@ export class DashboardComponent implements OnInit {
   currentBP: any[] = [];
   previousBP: any[] = [];
   filteredBP: any[] = [];
-  systolic: number[] = [];
-  diastolic: number[] = [];
-  pulse: number[] = [];
+  systolic!: number;
+  diastolic!: number;
+  pulse!: number;
   prescriptions: any[] = [];
   analyzedPrescriptionId: number | null = null;
+  analyzingPrescriptionId: number | null = null;
   selectedPrescriptionId: number | null = null;
   showAll: boolean = false;
   isMobile = false;
@@ -39,6 +46,10 @@ export class DashboardComponent implements OnInit {
   filteredBPRecords: any[] = [];
   labMetrics: any = {};
 
+  isLoading = false;
+  isPlanLoading = false;
+
+
   isSidebarOpen = false;
   checkScreen() {
     this.isMobile = window.innerWidth <= 768;
@@ -46,66 +57,79 @@ export class DashboardComponent implements OnInit {
   reminders: { id: number; name: string; time: string; editing: boolean }[] = [];
   latestInfo: any;
 
-  constructor(private router: Router, private authService: AuthService, private alert: AlertService) { }
+  constructor(private router: Router, private authService: AuthService, private alert: AlertService, private debounceService: DebounceService, private cache: CacheService) { }
 
   ngOnInit() {
+    this.debouncer = this.debounceService.createDebouncer<DebounceEvent>(500);
+
+    this.debouncer.subscribe((event: DebounceEvent) => {
+
+      switch (event.type) {
+
+        case 'analyze':
+          this.callAnalyzeAPI(event.id);
+          break;
+
+        case 'plan':
+          this.fetchPlan();
+          break;
+      }
+      setTimeout(() => {
+        this.updateDerivedProfileFields();
+      }, 0);
+
+    });
 
     this.loadBP();
-    this.authService.getPrescriptions().subscribe((data: any) => {
-      this.prescriptions = data;
-    });
-    this.authService.getProfile().subscribe({
-      next: (res: any) => {
-        this.profile = res;
-
-        // Calculate health score AFTER profile loads
-        this.profile.healthScore = this.calculateHealthScore();
-
-        // Wait for DOM to render
-        this.tryCreateRadarChart(); // 👈 ADD THIS
-
-      },
-      error: (err) => {
-
+    this.cache.getOrFetch<any[]>(
+      'dashboard_prescriptions',
+      () => this.authService.getPrescriptions(),
+      (data) => {
+        this.prescriptions = data;
       }
+    );
+    this.cache.getOrFetch<any>(
+      'dashboard_profile',
+      () => this.authService.getProfile(),
+      (res) => {
+        this.profile = { ...res }; // 🔥 important
 
-    });
+        this.updateDerivedProfileFields(); //use helper
 
-    this.authService.getLatestAdditionalInfo()
-      .subscribe((data: any) => {
-        this.latestInfo = data;
-      });
+        this.tryCreateRadarChart();
+      }
+    );
     // Load reminders
-    this.authService.getReminders().subscribe((data: any) => {
-
-      this.reminders = data;
-    });
+    this.cache.getOrFetch<any[]>(
+      'dashboard_reminders',
+      () => this.authService.getReminders(),
+      (data) => {
+        this.reminders = data;
+      }
+    );
     this.checkScreen();
     window.addEventListener('resize', () => this.checkScreen());
 
     this.checkScreen();
 
-    this.authService.getReports().subscribe((reports: any[]) => {
+    this.cache.getOrFetch<any[]>(
+      'dashboard_reports',
+      () => this.authService.getReports(),
+      (reports) => {
+        const allMetrics: any = {};
 
-      const allMetrics: any = {};
+        reports.forEach((r: any) => {
+          if (r.metrics) {
+            r.metrics.forEach((m: any) => {
+              allMetrics[m.name.toLowerCase()] = m;
+            });
+          }
+        });
 
-      reports.forEach((r: any) => {
-
-        if (r.metrics) {
-
-          r.metrics.forEach((m: any) => {
-
-            allMetrics[m.name.toLowerCase()] = m;
-
-          });
-
-        }
-
-      });
-
-      this.labMetrics = allMetrics;
-      this.tryCreateRadarChart();
-    });
+        this.labMetrics = allMetrics;
+        this.tryCreateRadarChart();
+      }
+    );
   }
 
   // HEALTH SCORE
@@ -132,6 +156,12 @@ export class DashboardComponent implements OnInit {
     if (score < 20) score = 20;
 
     return score;
+  }
+
+  updateDerivedProfileFields() {
+    if (!this.profile) return;
+
+    this.profile.healthScore = this.calculateHealthScore();
   }
 
   calculateLabRisks() {
@@ -169,16 +199,35 @@ export class DashboardComponent implements OnInit {
   }
 
   // AI PLAN
-  getPlan() {
+  fetchPlan() {
+
+    if (this.isPlanLoading) return;
+
+    const cacheKey = 'ai_plan';
+
+    // ✅ CACHE HIT
+    const cached = this.cache.get<any>(cacheKey);
+    if (cached) {
+      console.log('Plan from cache 🚀');
+      this.aiPlan = cached;
+      return;
+    }
+
+    // ❌ CACHE MISS
+    this.isPlanLoading = true;
+
     this.authService.getAIPlan(this.profile).subscribe({
       next: (res: any) => {
-
-
         this.aiPlan = res;
-      },
-      error: (err) => {
 
+        // 🔥 STORE CACHE
+        this.cache.set(cacheKey, res);
+
+        this.isPlanLoading = false;
+      },
+      error: () => {
         this.alert.error("Failed to load Plan");
+        this.isPlanLoading = false;
       }
     });
   }
@@ -188,23 +237,45 @@ export class DashboardComponent implements OnInit {
       this.alert.warning("Please enter medicine name and time");
       return;
     }
+
     this.authService.addReminder({
       medicineName: this.medicineName,
       time: this.medicineTime
-    }).subscribe((newReminder: any) => {
-      this.reminders.push(newReminder);
-      this.medicineName = '';
-      this.medicineTime = '';
+    }).subscribe({
+      next: (newReminder: any) => {
+
+        this.reminders.push(newReminder);
+
+        this.medicineName = '';
+        this.medicineTime = '';
+
+        // ✅ correct place
+        this.cache.delete('dashboard_reminders');
+
+        this.alert.success("Reminder added successfully");
+      },
+      error: () => {
+        this.alert.error("Failed to add reminder");
+      }
     });
-    this.alert.success("Reminder added successfully");
   }
+
   deleteReminder(index: number) {
     const reminder = this.reminders[index];
 
-    this.authService.deleteReminder(reminder.id).subscribe(() => {
-      this.reminders.splice(index, 1);
+    this.authService.deleteReminder(reminder.id).subscribe({
+      next: () => {
+
+        this.reminders = this.reminders.filter(r => r.id !== reminder.id);
+
+        this.cache.delete('dashboard_reminders');
+
+        this.alert.success("Reminder deleted");
+      },
+      error: () => {
+        this.alert.error("Delete failed");
+      }
     });
-    this.alert.success("Reminder deleted");
   }
 
   editReminder(index: number) {
@@ -216,13 +287,22 @@ export class DashboardComponent implements OnInit {
 
     this.authService.updateReminder(reminder.id, {
       name: reminder.name,
-
       time: reminder.time
-    }).subscribe(() => {
-      reminder.editing = false;
+    }).subscribe({
+      next: () => {
+
+        reminder.editing = false;
+
+        this.cache.delete('dashboard_reminders');
+
+        this.alert.success("Reminder updated");
+      },
+      error: () => {
+        this.alert.error("Update failed");
+      }
     });
-    this.alert.success("Reminder updated");
   }
+
   cancelEdit(index: number) {
     this.reminders[index].editing = false;
   }
@@ -302,32 +382,51 @@ export class DashboardComponent implements OnInit {
   }
 
   addBP() {
+
+    if (!this.systolic || !this.diastolic) {
+      this.alert.warning("Please enter systolic and diastolic values");
+      return;
+    }
+
     const data = {
       systolic: this.systolic,
       diastolic: this.diastolic,
       pulse: this.pulse
     };
 
-    this.authService.addBloodPressure(data).subscribe(() => {
-      this.systolic;
-      this.diastolic;
-      this.pulse;
-      this.loadBP();
+    this.authService.addBloodPressure(data).subscribe({
+      next: () => {
+
+        this.systolic = null as any;
+        this.diastolic = null as any;
+        this.pulse = null as any;
+
+        this.cache.delete('dashboard_bp');
+
+        this.loadBP();
+
+        this.alert.success("Blood pressure recorded");
+      },
+      error: () => {
+        this.alert.error("Failed to add BP");
+      }
     });
-    this.alert.success("Blood pressure recorded");
   }
 
   loadBP() {
-    this.authService.getBloodPressure().subscribe((data: any) => {
+    this.cache.getOrFetch<any[]>(
+      'dashboard_bp',
+      () => this.authService.getBloodPressure(),
+      (data) => {
+        this.bpRecords = data || [];
 
-      this.bpRecords = data || [];
+        this.extractMonths();
 
-      this.extractMonths();
-      setTimeout(() => {
-        this.createBPChart();
-      }, 100);
-
-    });
+        setTimeout(() => {
+          this.createBPChart();
+        }, 100);
+      }
+    );
   }
 
   getBPStatus(s: number, d: number): string {
@@ -424,24 +523,6 @@ export class DashboardComponent implements OnInit {
     }
 
     return true; // simple version (since we auto-add all)
-
-  }
-
-  togglePrescriptionMedicines(id: number) {
-
-    // If already opened → close it
-    if (this.selectedPrescriptionId === id) {
-      this.selectedPrescriptionId = null;
-      this.medicines = [];
-      return;
-    }
-
-    // Otherwise load and show
-    this.selectedPrescriptionId = id;
-
-    this.authService.analyzePrescription(id).subscribe((res: any) => {
-      this.medicines = res.medicines || [];
-    });
 
   }
 
@@ -805,9 +886,69 @@ export class DashboardComponent implements OnInit {
     }, 0);
   }
 
+
+  callAnalyzeAPI(id: number) {
+
+    // 🔁 Toggle (close)
+    if (this.selectedPrescriptionId === id) {
+      this.selectedPrescriptionId = null;
+      this.medicines = [];
+      return;
+    }
+
+    this.selectedPrescriptionId = id;
+
+    const cacheKey = `prescription_${id}`;
+
+    // ✅ CACHE HIT
+    const cached = this.cache.get<any[]>(cacheKey);
+    if (cached) {
+      this.medicines = cached;
+      return;
+    }
+
+    // 🔥 START LOADER
+    this.analyzingPrescriptionId = id;
+
+    this.authService.analyzePrescription(id).subscribe({
+      next: (res: any) => {
+        const meds = res.medicines || [];
+
+        this.medicines = meds;
+
+        this.cache.set(cacheKey, meds);
+
+        // 🔥 STOP LOADER
+        this.analyzingPrescriptionId = null;
+      },
+      error: () => {
+        this.analyzingPrescriptionId = null;
+        this.alert.error("Failed to analyze prescription");
+      }
+    });
+  }
+
+  onAnalyzeClick(id: number) {
+    this.debouncer.next({ type: 'analyze', id });
+  }
+
+  onGetPlanClick() {
+
+    // 🔁 If already shown → HIDE
+    if (this.aiPlan) {
+      this.aiPlan = null;
+      return;
+    }
+
+    // 🔥 Else → trigger debouncer
+    this.debouncer.next({ type: 'plan' });
+  }
+
+
   // LOGOUT
 
   logout() {
+    this.cache.clear();
     this.authService.logout();
     this.alert.success("Logged out successfully");
     this.router.navigate(['/login']);

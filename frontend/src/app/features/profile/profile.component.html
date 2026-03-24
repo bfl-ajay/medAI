@@ -80,7 +80,7 @@
 
           <div class="form-group">
             <label>Age</label>
-            <input type="number" [(ngModel)]="user.age">
+            <input type="number" [(ngModel)]="user.age" min="0">
           </div>
 
         </div>
@@ -115,12 +115,28 @@
 
         <div class="form-actions">
 
-          <button class="discard-btn" (click)="discardPersonalChanges()">
-            Discard Changes
+          <button class="discard-btn" (click)="discardPersonalChanges()" [disabled]="isDiscarding">
+
+            <ng-container *ngIf="isDiscarding">
+              <i class="fa-solid fa-spinner fa-spin"></i> Resetting...
+            </ng-container>
+
+            <ng-container *ngIf="!isDiscarding">
+              Discard Changes
+            </ng-container>
+
           </button>
 
-          <button class="save-btn" (click)="saveProfile()">
-            Save Changes
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSavingProfile">
+
+            <ng-container *ngIf="isSavingProfile">
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+            </ng-container>
+
+            <ng-container *ngIf="!isSavingProfile">
+              Save Changes
+            </ng-container>
+
           </button>
 
         </div>
@@ -360,12 +376,17 @@
 
           <div class="settings-right">
 
-            <button class="outline-btn" (click)="sendEmailOTP()" [disabled]="user?.two_factor_enabled">
-              Send OTP
+            <button class="outline-btn" (click)="sendEmailOTP()" [disabled]="emailOtpSent || user?.two_factor_enabled">
+
+              <ng-container *ngIf="!user?.two_factor_enabled">
+                Send OTP
+              </ng-container>
+
+              <ng-container *ngIf="user?.two_factor_enabled">
+                Verified ✓
+              </ng-container>
+
             </button>
-            <span *ngIf="user?.two_factor_enabled" class="verified-badge">
-              Verified ✓
-            </span>
 
           </div>
 

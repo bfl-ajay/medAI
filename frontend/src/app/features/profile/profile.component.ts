@@ -6,10 +6,16 @@ import { DiseaseService } from 'src/app/core/services/disease.service';
 import { Chart } from 'chart.js/auto';
 import { AlertService } from 'src/app/core/services/alert.service';
 import { ActivatedRoute } from '@angular/router';
-import {
-    environment
+import { environment } from 'src/environments/environment';
+import { DebounceService } from 'src/app/core/services/debounce.service';
+import { CacheService } from 'src/app/core/services/cache.service';
+import { ThrottleService } from 'src/app/core/services/throttle.service';
 
-} from 'src/environments/environment';
+type ProfileEvent =
+    | { type: 'disease-search'; query: string }
+    | { type: 'save-profile' }
+    | { type: 'discard-profile' };
+
 @Component({
     selector: 'app-profile',
     templateUrl: './profile.component.html',
@@ -45,13 +51,54 @@ export class ProfileComponent {
     recoveryEmail: string = '';
     latestInfo: any;
     isEditingRecoveryEmail: boolean = false;
+    debouncer: any;
+    isSavingProfile = false;
+    isDiscarding = false;
+    otpThrottler: any;
 
     get profileCompletion(): number {
         return this.getProfileCompletion();
     }
-    constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute, private authService: AuthService, private diseaseService: DiseaseService, private alert: AlertService) { }
+    constructor(
+        private http: HttpClient,
+        private router: Router,
+        private route: ActivatedRoute,
+        private authService: AuthService,
+        private diseaseService: DiseaseService,
+        private alert: AlertService,
+        private debounceService: DebounceService,
+        private throttleService: ThrottleService,
+        private cache: CacheService
+    ) { }
+
 
     ngOnInit() {
+        this.debouncer = this.debounceService.createDebouncer<ProfileEvent>(500);
+
+        this.debouncer.subscribe((event: ProfileEvent) => {
+
+            switch (event.type) {
+
+                case 'disease-search':
+                    this.searchDiseases(event.query);
+                    break;
+
+                case 'save-profile':
+                    this.handleSaveProfile();
+                    break;
+
+                case 'discard-profile':
+                    this.handleDiscardProfile();
+                    break;
+            }
+
+        });
+
+        this.otpThrottler = this.throttleService.createThrottler<void>(3000);
+
+        this.otpThrottler.subscribe(() => {
+            this.triggerSendOTP();
+        });
         this.route.queryParams.subscribe(params => {
 
             if (params['tab'] === 'security') {
@@ -75,15 +122,29 @@ export class ProfileComponent {
 
         });
 
-        this.authService.getReports().subscribe((data: any) => {
+        // REPORTS
+        const reportsCache = this.cache.get<any>('profile_reports');
 
-            this.reports = data;
-        });
+        if (reportsCache) {
+            this.reports = reportsCache;
+        } else {
+            this.authService.getReports().subscribe((data: any) => {
+                this.reports = data;
+                this.cache.set('profile_reports', data);
+            });
+        }
 
-        this.authService.getPrescriptions().subscribe((data: any) => {
+        // PRESCRIPTIONS
+        const presCache = this.cache.get<any>('profile_prescriptions');
 
-            this.prescriptions = data;
-        });
+        if (presCache) {
+            this.prescriptions = presCache;
+        } else {
+            this.authService.getPrescriptions().subscribe((data: any) => {
+                this.prescriptions = data;
+                this.cache.set('profile_prescriptions', data);
+            });
+        }
         this.authService.getAdditionalInfo().subscribe((data: any) => {
             this.pastRecords = data;
         });
@@ -97,50 +158,78 @@ export class ProfileComponent {
 
 
     }
-
     saveProfile() {
+        this.debouncer.next({ type: 'save-profile' });
+        console.log("Sending age:", this.user.age);
+    }
+
+    handleSaveProfile() {
+
+        if (this.isSavingProfile) return;
+
+        this.isSavingProfile = true;
 
         const updateData = {
             name: this.user?.name,
             email: this.user?.email,
             height: this.user?.height,
             weight: this.user?.weight,
+            age: this.user?.age,
             bloodGroup: this.user?.bloodGroup,
             knownDiseases: this.knownDiseases
         };
 
+        this.authService.updateProfile(updateData).subscribe({
+            next: () => {
 
+                // 🔥🔥 ADD THIS LINE (MOST IMPORTANT)
+                this.cache.delete('dashboard_profile');
 
-        this.authService.updateProfile(updateData).subscribe(() => {
+                this.alert.success("Profile updated successfully");
 
-            this.authService.getProfile().subscribe((freshProfile: any) => {
+                this.authService.getProfile().subscribe((freshProfile: any) => {
+                    this.authService.setUser(freshProfile);
+                    this.router.navigate(['/dashboard']);
+                });
 
-                this.authService.setUser(freshProfile);
-
-                this.router.navigate(['/dashboard']);
-
-            });
-
+                this.isSavingProfile = false;
+            },
+            error: () => {
+                this.isSavingProfile = false;
+                this.alert.error("Failed to update profile");
+            }
         });
-
     }
-
     discardPersonalChanges() {
+        this.debouncer.next({ type: 'discard-profile' });
+    }
 
-        this.authService.getProfile().subscribe((data: any) => {
+    handleDiscardProfile() {
 
-            this.user = JSON.parse(JSON.stringify(data));
+        if (this.isDiscarding) return;
 
-            // reset diseases also
-            this.knownDiseases = data.knownDiseases ? [...data.knownDiseases] : [];
+        this.isDiscarding = true;
 
-            // reset input helpers
-            this.diseaseInput = '';
-            this.filteredDiseases = [];
+        this.authService.getProfile().subscribe({
+            next: (data: any) => {
 
+                this.user = JSON.parse(JSON.stringify(data));
+                this.knownDiseases = data.knownDiseases ? [...data.knownDiseases] : [];
+
+                this.diseaseInput = '';
+                this.filteredDiseases = [];
+
+                this.alert.success("Changes discarded");
+
+                this.isDiscarding = false;
+            },
+            error: () => {
+                this.isDiscarding = false;
+            }
         });
 
     }
+
     openFile(filePath: string, type: 'reports' | 'prescriptions') {
 
         if (!filePath) return;
@@ -149,14 +238,22 @@ export class ProfileComponent {
         window.open(url, '_blank');
 
     }
-    onDiseaseInput() {
 
-        if (!this.diseaseInput.trim()) {
+    onDiseaseInput() {
+        this.debouncer.next({
+            type: 'disease-search',
+            query: this.diseaseInput
+        });
+    }
+
+    searchDiseases(query: string) {
+
+        if (!query.trim()) {
             this.filteredDiseases = [];
             return;
         }
 
-        this.diseaseService.searchDiseases(this.diseaseInput)
+        this.diseaseService.searchDiseases(query)
             .subscribe((response: any) => {
 
                 const results = response[3] || [];
@@ -170,8 +267,8 @@ export class ProfileComponent {
                         !item.name.toLowerCase().includes('poisoning') &&
                         !item.name.toLowerCase().includes('underdosing')
                     );
-            });
 
+            });
     }
     selectDisease(disease: any) {
 
@@ -431,7 +528,9 @@ export class ProfileComponent {
         });
     }
     sendEmailOTP() {
-
+        this.otpThrottler.next();
+    }
+    triggerSendOTP() {
         this.authService.sendEmailOTP().subscribe({
             next: () => {
                 this.emailOtpSent = true;
@@ -441,9 +540,7 @@ export class ProfileComponent {
                 console.error(err);
             }
         });
-
     }
-
     verifyEmailOTP() {
 
         if (this.user?.two_factor_enabled) {
@@ -522,15 +619,19 @@ export class ProfileComponent {
 
                 });
 
-
                 this.authService.getProfile().subscribe((freshProfile: any) => {
+
+                    // 🔥 UPDATE LOCAL STATE (MOST IMPORTANT)
+                    this.user = { ...freshProfile };
+
+                    this.knownDiseases = freshProfile.knownDiseases
+                        ? [...freshProfile.knownDiseases]
+                        : [];
 
                     this.authService.setUser(freshProfile);
 
                     this.router.navigate(['/dashboard']);
-
-                })
-
+                });
             },
 
             error: (err) => {
