@@ -41,11 +41,12 @@ if (!fs.existsSync(uploadDir)) {
 const reportStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
+
+        const isPDF = file.mimetype === 'application/pdf';
+
         return {
             folder: 'reports',
-            resource_type: 'auto',
-            type: 'upload',        // ✅ ADD THIS
-            access_mode: 'public'  // ✅ ADD THIS
+            resource_type: isPDF ? 'raw' : 'image'
         };
     }
 });
@@ -61,7 +62,7 @@ const prescriptionStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'prescriptions',
-        resource_type: 'auto' // supports pdf + images
+        resource_type: 'auto'
     }
 });
 
@@ -166,7 +167,6 @@ router.post('/login', async (req, res) => {
 
         const user = results[0];
 
-        // ✅ THIS IS THE FIX
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -662,8 +662,7 @@ router.post(
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
-            console.log("FILE DEBUG:", req.file);
-            const fileUrl = req.file.path || req.file.url || null;
+
             const sql = `
                 INSERT INTO medical_reports (user_id, file_name, file_path)
                 VALUES (?, ?, ?)
@@ -672,7 +671,7 @@ router.post(
             await db.execute(sql, [
                 userId,
                 req.file.originalname,
-                fileUrl
+                req.file.path
             ]);
 
             res.json({ message: "Report uploaded successfully" });
@@ -918,33 +917,15 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
 
         let extractedText = "";
 
-        const isPDF =
-            fileUrl.toLowerCase().includes('.pdf');
+        const isPDF = fileUrl.includes('/raw/upload/');
 
         if (isPDF) {
-
-            try {
-
-                const response = await axios.get(fileUrl, {
-                    responseType: 'arraybuffer',
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0',
-                        'Accept': '*/*'
-                    },
-                    maxRedirects: 5
-                });
-
-                const pdfData = await pdf(response.data);
-
-                extractedText = pdfData.text;
-
-            } catch (err) {
-
-                console.error("PDF FETCH FAILED:", err.message);
-                extractedText = "Unable to extract PDF";
-
-            }
-
+            const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+            const pdfData = await pdf(response.data);
+            extractedText = pdfData.text;
+        } else {
+            const result = await Tesseract.recognize(fileUrl, 'eng');
+            extractedText = result.data.text;
         }
 
         const suggestions = generateSuggestions(extractedText);
@@ -960,6 +941,7 @@ router.get('/analyze-report/:id', authMiddleware, async (req, res) => {
     }
 
 });
+
 
 router.get("/analyze-prescription/:id", authMiddleware, async (req, res) => {
     try {
