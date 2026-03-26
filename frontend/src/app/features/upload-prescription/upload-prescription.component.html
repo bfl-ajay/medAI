@@ -120,9 +120,39 @@
 
               <h4>Extracted Text</h4>
 
-              <pre class="ocr-text">
+              <div *ngIf="analysisMap[p.id]" class="analysis-box">
+
+                <h4>Extracted Text</h4>
+
+                <!-- ✅ FULL ACCESS -->
+                <ng-container *ngIf="canAccessAI">
+
+                  <pre class="ocr-text">
 {{ analysisMap[p.id].extractedText }}
-        </pre>
+    </pre>
+
+                </ng-container>
+
+                <!-- LIMITED ACCESS -->
+                <ng-container *ngIf="!canAccessAI">
+
+                  <!-- SHOW FIRST PART -->
+                  <pre class="ocr-text">
+{{ analysisMap[p.id].extractedText | slice:0:277 }}
+    </pre>
+
+                  <!-- BLURRED REST -->
+                  <div class="blurred-text">
+                    {{ analysisMap[p.id].extractedText | slice:300:800 }}
+                  </div>
+
+                  <p class="upgrade-text">
+                    🔒 Upgrade to view full prescription analysis
+                  </p>
+
+                </ng-container>
+
+              </div>
 
             </div>
 

@@ -25,8 +25,12 @@ export class UploadPrescriptionComponent {
   loadingId: number | null = null;
   debouncer: any;
   uploading = false;
-  canAccessAI: boolean = true;
+  isPremium = false;
+  isTrialActive = false;
 
+  get canAccessAI(): boolean {
+    return this.isPremium || this.isTrialActive;
+  }
   constructor(
     private authService: AuthService,
     private alert: AlertService,
@@ -36,6 +40,14 @@ export class UploadPrescriptionComponent {
 
   ngOnInit() {
     this.loadPrescriptions();
+    this.authService.getProfile().subscribe((res: any) => {
+
+      const plan = this.authService.getUserPlanState(res);
+
+      this.isPremium = plan.isPremium;
+      this.isTrialActive = plan.isTrialActive;
+
+    });
 
     this.debouncer = this.debounceService.createDebouncer<PrescriptionEvent>(500);
 

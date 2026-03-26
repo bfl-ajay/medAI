@@ -61,6 +61,10 @@ export class ProfileComponent {
     isPremium = false;
     isTrialActive = false;
 
+    get canAccessAI(): boolean {
+        return this.isPremium || this.isTrialActive;
+    }
+
     get profileCompletion(): number {
         return this.getProfileCompletion();
     }
@@ -121,7 +125,7 @@ export class ProfileComponent {
             this.user = res;
             console.log("PROFILE DATA:", res);
             const plan = this.authService.getUserPlanState(res);
-
+            this.knownDiseases = res.knownDiseases || [];
             this.isPremium = plan.isPremium;
             this.isTrialActive = plan.isTrialActive;
             this.trialDaysLeft = plan.trialDaysLeft;
@@ -243,9 +247,13 @@ export class ProfileComponent {
 
         if (!filePath) return;
 
+        if (filePath.startsWith('http')) {
+            window.open(filePath, '_blank'); // ✅ Cloudinary
+            return;
+        }
+
         const url = `${environment.apiUrl}/uploads/${type}/${filePath}`;
         window.open(url, '_blank');
-
     }
 
     onDiseaseInput() {
@@ -431,14 +439,33 @@ export class ProfileComponent {
         this.filterByMonth();
 
     }
-
     filterByMonth() {
 
+        const currentMonth = this.getCurrentMonthKey();
+
+        // HANDLE "ALL" FIRST
         if (this.selectedMonth === 'all') {
 
-            this.filteredBPRecords = [...this.bpRecords];
+            if (this.canAccessAI) {
+                // premium → full access
+                this.filteredBPRecords = [...this.bpRecords];
+
+            } else {
+                // free → only current month
+                this.filteredBPRecords = this.bpRecords.filter(bp => {
+                    const d = new Date(bp.recorded_at);
+                    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+                    return key === currentMonth;
+                });
+            }
 
         } else {
+
+            //  BLOCK non-current months for free users
+            if (!this.canAccessAI && this.selectedMonth !== currentMonth) {
+                this.filteredBPRecords = [];
+                return;
+            }
 
             const [year, month] = this.selectedMonth.split('-');
 

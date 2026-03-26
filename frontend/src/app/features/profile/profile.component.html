@@ -36,35 +36,35 @@
         <div class="form-row">
           <div class="form-group">
             <label>Name</label>
-            <input [(ngModel)]="user.name">
+            <input [(ngModel)]="user.name" [disabled]="!canAccessAI">
           </div>
 
           <div class="form-group">
             <label>Email</label>
-            <input [(ngModel)]="user.email">
+            <input [(ngModel)]="user.email" [disabled]="!canAccessAI">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Height</label>
-            <input type="number" [(ngModel)]="user.height">
+            <input type="number" [(ngModel)]="user.height" [disabled]="!canAccessAI">
           </div>
 
           <div class="form-group">
             <label>Weight</label>
-            <input type="number" [(ngModel)]="user.weight">
+            <input type="number" [(ngModel)]="user.weight" [disabled]="!canAccessAI">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Blood Group</label>
-            <input [(ngModel)]="user.bloodGroup">
+            <input [(ngModel)]="user.bloodGroup" [disabled]="!canAccessAI">
           </div>
           <div class="form-group">
             <label>Age</label>
-            <input type="number" [(ngModel)]="user.age" min="0">
+            <input type="number" [(ngModel)]="user.age" [disabled]="!canAccessAI" min="0">
           </div>
         </div>
 
@@ -75,12 +75,12 @@
           <div class="tags-container" *ngIf="knownDiseases.length > 0">
             <div class="tag" *ngFor="let d of knownDiseases; let i=index">
               {{ d }}
-              <span (click)="removeDisease(i)">×</span>
+              <span (click)="canAccessAI && removeDisease(i)">x</span>
             </div>
           </div>
 
           <input type="text" placeholder="Type disease..." [(ngModel)]="diseaseInput" (input)="onDiseaseInput()"
-            (keydown.enter)="addDisease($event)">
+            (keydown.enter)="addDisease($event)" [disabled]="!canAccessAI">
           <div class="suggestions" *ngIf="filteredDiseases.length > 0">
             <div *ngFor="let s of filteredDiseases" (click)="selectDisease(s)">
               {{ s.name }}
@@ -100,7 +100,7 @@
           </button>
 
           <button class="save-btn" (click)="saveProfile()" [disabled]="isSavingProfile">
-            <ng-container *ngIf="isSavingProfile">
+            <ng-container *ngIf="isSavingProfile" [disabled]="isSavingProfile || !canAccessAI">
               <i class="fa-solid fa-spinner fa-spin"></i> Saving...
             </ng-container>
 
@@ -109,6 +109,9 @@
             </ng-container>
           </button>
         </div>
+        <p *ngIf="!canAccessAI" class="upgrade-text">
+          🔒 Upgrade to edit profile details
+        </p>
       </div>
 
       <!-- ===== TOP: REPORTS + PRESCRIPTIONS ===== -->
@@ -178,12 +181,15 @@
               <select [(ngModel)]="selectedMonth" (change)="filterByMonth()" class="month-dropdown">
                 <option value="all">All Records</option>
                 <ng-container *ngFor="let m of availableMonths">
-                  <option *ngIf="m !== 'all'" [value]="m">
+                  <option *ngIf="m !== 'all'" [value]="m" [disabled]="!canAccessAI && m !== getCurrentMonthKey()">
+
                     {{ formatMonth(m) }}
+                    {{ !canAccessAI && m !== getCurrentMonthKey() ? ' 🔒' : '' }}
                   </option>
                 </ng-container>
               </select>
             </div>
+
           </div>
 
           <div class="bp-table-wrapper">
