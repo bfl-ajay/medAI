@@ -181,7 +181,7 @@ export class ProfileComponent {
         this.route.queryParams.subscribe(params => {
             if (params['tab'] === 'security') {
                 this.activeTab = 'security';
-                this.getPaymentHistory(); 
+                this.getPaymentHistory();
             }
         });
 
@@ -865,17 +865,23 @@ export class ProfileComponent {
     getPaymentHistory() {
         this.loadingPayments = true;
 
-        this.http.get('http://localhost:5000/api/payment/history')
-            .subscribe({
-                next: (res: any) => {
-                    this.paymentHistory = res;
-                    this.loadingPayments = false;
-                },
-                error: () => {
-                    this.loadingPayments = false;
-                }
-            });
+        const token = localStorage.getItem('token');
+
+        this.http.get(`${environment.apiUrl}/api/payment/history`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).subscribe({
+            next: (res: any) => {
+                this.paymentHistory = res;
+                this.loadingPayments = false;
+            },
+            error: () => {
+                this.loadingPayments = false;
+            }
+        });
     }
+
     getFilteredPayments() {
         if (this.selectedPaymentFilter === 'all') return this.paymentHistory;
 
