@@ -31,6 +31,7 @@ export class UploadReportsComponent {
   debouncer: any;
   isPremium = false;
   isTrialActive = false;
+  reportFilterMap: { [key: number]: string } = {}; F
 
   get canAccessAI(): boolean {
     return this.isPremium || this.isTrialActive;
@@ -443,6 +444,14 @@ export class UploadReportsComponent {
 
   onAnalyzeClick(id: number) {
     this.debouncer.next({ type: 'analyze', id });
+  }
+
+  getFilteredMetrics(reportId: number, metrics: any[]) {
+    const filter = this.reportFilterMap[reportId];
+
+    if (!filter || filter === 'all') return metrics;
+
+    return metrics.filter(m => m.status === filter);
   }
 }
 

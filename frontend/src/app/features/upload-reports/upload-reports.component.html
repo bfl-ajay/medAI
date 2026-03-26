@@ -59,7 +59,7 @@
             <div class="action-buttons">
               <button type="button" class="analyze-btn" (click)="onAnalyzeClick(r.id)">
                 <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'">
-                </i>   Analyze
+                </i> Analyze
               </button>
 
               <button class="delete-btn" (click)="deleteReport(r.id)"> <i class="fa-solid fa-trash"></i>
@@ -82,126 +82,83 @@
 
               <h4>Key Metrics</h4>
 
-              <div *ngIf="reportAnalysisMap[r.id].metrics" class="metrics-grid">
+              <div *ngIf="reportAnalysisMap[r.id].metrics">
+                <div class="filter-bar">
 
-                <!-- ✅ FULL ACCESS (TRIAL / PREMIUM) -->
-                <ng-container *ngIf="canAccessAI">
+                  <button (click)="reportFilterMap[r.id] = 'all'">All</button>
+                  <button (click)="reportFilterMap[r.id] = 'normal'">Normal</button>
+                  <button (click)="reportFilterMap[r.id] = 'borderline'">Borderline</button>
+                  <button (click)="reportFilterMap[r.id] = 'low'">Low</button>
+                  <button (click)="reportFilterMap[r.id] = 'high'">High</button>
 
-                  <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics">
-
-                    <div class="metric-header">
-                      <div class="metric-title">{{ m.name }}</div>
-                      <span class="metric-status" [ngClass]="m.status">
-                        {{ m.status | titlecase }}
-                      </span>
-                    </div>
-
-                    <div class="metric-info-card-inline">
-                      <div class="metric-stats">
-
-                        <div class="stat-box">
-                          <span class="label">Your Result</span>
-                          <span class="value">
-                            {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                </div>
+                <!-- ✅ FULL ACCESS -->
+                <div class="table-scroll">
+                  <table *ngIf="canAccessAI" class="metrics-table">
+                    <thead>
+                      <tr>
+                        <th>Test</th>
+                        <th>Result</th>
+                        <th>Normal Range</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let m of getFilteredMetrics(r.id, reportAnalysisMap[r.id].metrics)">
+                        <td [title]="m.name">{{ m.name }}</td>
+                        <td>{{ m.value | number:'1.0-2' }} {{ m.unit }}</td>
+                        <td>{{ m.range }}</td>
+                        <td>
+                          <span class="metric-status" [ngClass]="m.status">
+                            {{ m.status | titlecase }}
                           </span>
-                        </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
 
-                        <div class="stat-box">
-                          <span class="label">Normal Range</span>
-                          <span class="value">{{ m.range }}</span>
-                        </div>
+                  <!-- 🔒 LIMITED ACCESS -->
+                  <table *ngIf="!canAccessAI" class="metrics-table">
+                    <thead>
+                      <tr>
+                        <th>Test</th>
+                        <th>Result</th>
+                        <th>Range</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
 
-                      </div>
-
-                      <div class="metric-source">
-                        <a [href]="'https://en.wikipedia.org/wiki/' + (m.name | lowercase)" target="_blank">
-                          Source: Wikipedia
-                          <i class="fa-solid fa-up-right-from-square"></i>
-                        </a>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </ng-container>
-
-
-                <!-- 🔒 PARTIAL ACCESS (EXPIRED USERS) -->
-                <ng-container *ngIf="!canAccessAI">
-
-                  <!-- ✅ FIRST 2 VISIBLE -->
-                  <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(0, 2)">
-
-                    <div class="metric-header">
-                      <div class="metric-title">{{ m.name }}</div>
-                      <span class="metric-status" [ngClass]="m.status">
-                        {{ m.status | titlecase }}
-                      </span>
-                    </div>
-
-                    <div class="metric-info-card-inline">
-                      <div class="metric-stats">
-
-                        <div class="stat-box">
-                          <span class="label">Your Result</span>
-                          <span class="value">
-                            {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                      <!-- visible rows -->
+                      <tr *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(0,2)">
+                        <td>{{ m.name }}</td>
+                        <td>{{ m.value | number:'1.0-2' }} {{ m.unit }}</td>
+                        <td>{{ m.range }}</td>
+                        <td>
+                          <span class="metric-status" [ngClass]="m.status">
+                            {{ m.status | titlecase }}
                           </span>
-                        </div>
+                        </td>
+                      </tr>
 
-                        <div class="stat-box">
-                          <span class="label">Normal Range</span>
-                          <span class="value">{{ m.range }}</span>
-                        </div>
+                      <!-- blurred rows -->
+                      <tr class="blurred" *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(2,6)">
+                        <td>{{ m.name }}</td>
+                        <td>{{ m.value | number:'1.0-2' }} {{ m.unit }}</td>
+                        <td>{{ m.range }}</td>
+                        <td>{{ m.status }}</td>
+                      </tr>
 
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <!-- LOCKED REST (FIXED VERSION) -->
-                  <div class="locked-metrics">
-
-                    <div class="metric-card blurred" *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(2, 6)">
-
-                      <div class="metric-header">
-                        <div class="metric-title">{{ m.name }}</div>
-                        <span class="metric-status" [ngClass]="m.status">
-                          {{ m.status | titlecase }}
-                        </span>
-                      </div>
-
-                      <div class="metric-info-card-inline">
-                        <div class="metric-stats">
-
-                          <div class="stat-box">
-                            <span class="label">Your Result</span>
-                            <span class="value">
-                              {{ m.value | number:'1.0-2' }} {{ m.unit }}
-                            </span>
-                          </div>
-
-                          <div class="stat-box">
-                            <span class="label">Normal Range</span>
-                            <span class="value">{{ m.range }}</span>
-                          </div>
-
-                        </div>
-                      </div>
-
-                    </div>
-                    <p class="hidden-count" *ngIf="reportAnalysisMap[r.id].metrics.length > 6">
-                      + {{ reportAnalysisMap[r.id].metrics.length - 6 }} more hidden
-                    </p>
-                    <!-- 🔥 Overlay centered on locked section -->
-                    <div class="blur-overlay">
-                      🔒 Upgrade to view full report
-                    </div>
-
-                  </div>
-
-                </ng-container>
-
+                    </tbody>
+                  </table>
+                </div>
+                <!-- LOCK MESSAGE -->
+                <div *ngIf="!canAccessAI" class="blur-overlay" style="position: relative; margin-top: 10px;">
+                  🔒 Upgrade to view full report
+                </div>
+                <p class="hidden-count" *ngIf="!canAccessAI && reportAnalysisMap[r.id].metrics.length > 6">
+                  + {{ reportAnalysisMap[r.id].metrics.length - 6 }} more hidden
+                </p>
               </div>
 
             </div>

@@ -60,11 +60,17 @@ export class ProfileComponent {
     trialDaysLeft: number = 0;
     isPremium = false;
     isTrialActive = false;
+    isPaying = false;
+    paymentHistory: any[] = [];
+    loadingPayments = false;
+    selectedPaymentFilter: string = 'all';
 
     get canAccessAI(): boolean {
-        return this.isPremium || this.isTrialActive;
+        if (this.isPremium && this.user?.plan_expires) {
+            return new Date(this.user.plan_expires) > new Date();
+        }
+        return this.isTrialActive;
     }
-
     get profileCompletion(): number {
         return this.getProfileCompletion();
     }
@@ -168,6 +174,15 @@ export class ProfileComponent {
 
             this.extractMonths();
 
+        });
+        if (this.activeTab === 'security') {
+            this.getPaymentHistory();
+        }
+        this.route.queryParams.subscribe(params => {
+            if (params['tab'] === 'security') {
+                this.activeTab = 'security';
+                this.getPaymentHistory(); 
+            }
         });
 
     }
@@ -809,13 +824,24 @@ export class ProfileComponent {
 
     }
 
+
     payNow() {
+        if (this.isPaying) return;
+
+        this.isPaying = true;
+
         this.paymentService.initiatePayment({
             amount: 99,
-            name: 'Swati',
-            email: 'test@gmail.com'
-        }).subscribe((res: any) => {
-            this.redirectToPayU(res);
+            name: this.user?.name || 'User',
+            email: this.user?.email
+        }).subscribe({
+            next: (res: any) => {
+                this.redirectToPayU(res);
+            },
+            error: () => {
+                this.isPaying = false;
+                this.alert.error("Payment failed. Try again.");
+            }
         });
     }
 
@@ -836,5 +862,33 @@ export class ProfileComponent {
         form.submit();
     }
 
+    getPaymentHistory() {
+        this.loadingPayments = true;
 
+        this.http.get('http://localhost:5000/api/payment/history')
+            .subscribe({
+                next: (res: any) => {
+                    this.paymentHistory = res;
+                    this.loadingPayments = false;
+                },
+                error: () => {
+                    this.loadingPayments = false;
+                }
+            });
+    }
+    getFilteredPayments() {
+        if (this.selectedPaymentFilter === 'all') return this.paymentHistory;
+
+        return this.paymentHistory.filter(p =>
+            p.status.toLowerCase() === this.selectedPaymentFilter
+        );
+    }
+    getDaysLeft(): number {
+        if (!this.user?.plan_expires) return 0;
+
+        const expiry = new Date(this.user.plan_expires).getTime();
+        const now = new Date().getTime();
+
+        return Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
+    }
 }

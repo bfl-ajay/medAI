@@ -371,12 +371,12 @@ export class AuthService {
         const trialDaysLeft = Math.max(0, 7 - diff);
         const isTrialActive = trialDaysLeft > 0;
 
-        // return { isPremium, isTrialActive, trialDaysLeft };
-        return {
-            isPremium: false,
-            isTrialActive: false,
-            trialDaysLeft: 0
-        };
+        return { isPremium, isTrialActive, trialDaysLeft };
+    //     return {
+    //         isPremium: false,
+    //         isTrialActive: false,
+    //         trialDaysLeft: 0
+    //     };
     }
 
 }

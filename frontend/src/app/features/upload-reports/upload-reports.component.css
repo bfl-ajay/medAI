@@ -433,12 +433,15 @@
 .report-info a {
 
   font-weight: 700;
-
   font-size: 14px;
-
   color: black;
-
   text-decoration: none;
+  display: block;
+  max-width: 200px;
+  /* adjust if needed */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
 }
 
@@ -931,7 +934,8 @@
 
 .locked-metrics {
   position: relative;
-  display: contents; /* 🔥 keeps grid layout intact */
+  display: contents;
+  /* 🔥 keeps grid layout intact */
 }
 
 .metric-card.blurred {
@@ -941,8 +945,7 @@
 }
 
 .hidden-count {
-  text-align: center;
-  margin-top: 10px;
+  text-align: left;
   font-size: 13px;
   color: #F0131A;
 }
@@ -982,22 +985,88 @@
 }
 
 
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+  min-height: 260px;
+   table-layout: fixed;
+}
+
+.metrics-table th {
+  text-align: left;
+  padding: 10px;
+  background: #f1f5f9;
+  font-weight: 700;
+  border-bottom: 2px solid #e6ecf5;
+}
+
+.metrics-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e6ecf5;
+    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metrics-table tr:hover {
+  background: #f9fbff;
+}
+
+.metrics-table th:nth-child(1),
+.metrics-table td:nth-child(1) {
+  width: 35%;
+}
+
+.metrics-table th:nth-child(2),
+.metrics-table td:nth-child(2) {
+  width: 20%;
+}
+
+.metrics-table th:nth-child(3),
+.metrics-table td:nth-child(3) {
+  width: 25%;
+}
+
+.metrics-table th:nth-child(4),
+.metrics-table td:nth-child(4) {
+  width: 20%;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.filter-bar button {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: #eef2f7;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter-bar button:hover {
+  background: #dbeafe;
+}
+
 /* ===== Responsive ===== */
 
 @media(max-width:768px) {
 
-  .page-container {
-    padding: 12px
-  }
 
   .page-card {
-    padding: 18px
+    padding: 18px;
+
   }
 
   .page-hero {
     padding: 20px
   }
-
 
   .ocr-text {
     display: block;
@@ -1019,6 +1088,43 @@
     grid-template-columns: 1fr;
   }
 
+  .analysis-box {
+    padding: 12px 0;
+    /* remove left gap */
+  }
+
+  .metrics-table {
+    width: 100%;
+    margin-left: 0;
+    border-spacing: 0;
+  }
+
+  .metrics-table th,
+  .metrics-table td {
+    padding-left: 6px;
+    /* small spacing, not zero (looks better on mobile) */
+  }
+
+  .report-info a {
+    max-width: 160px;
+  }
+
+  .report-header {
+    flex-wrap: nowrap;
+    /* 🔥 stop jumping */
+    align-items: center;
+  }
+
+  .report-info {
+    flex: 1;
+    min-width: 0;
+    /* 🔥 VERY IMPORTANT */
+  }
+
+  .action-buttons {
+    flex-shrink: 0;
+    /* 🔥 lock position */
+  }
 
 }
 
