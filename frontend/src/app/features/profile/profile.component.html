@@ -3,33 +3,27 @@
   <!-- ===== PAGE HERO ===== -->
 
   <div class="page-hero">
-
     <div class="page-hero-text">
-
       <h1>
         Profile Settings
       </h1>
-
       <p *ngIf="activeTab === 'personal'">
         Manage your personal health information
       </p>
-
       <p *ngIf="activeTab === 'security'">
         Manage your account security and privacy
       </p>
-
     </div>
 
     <div class="page-hero-icon">
       <i *ngIf="activeTab === 'personal'" class="fa-solid fa-heart-pulse"></i>
       <i *ngIf="activeTab === 'security'" class="fa-solid fa-shield-halved"></i>
     </div>
-
   </div>
+
   <!-- ================= PERSONAL PAGE ================= -->
 
   <div *ngIf="activeTab === 'personal'" class="profile-wrapper">
-
 
     <!-- RIGHT CONTENT -->
 
@@ -37,85 +31,65 @@
 
       <!-- PERSONAL FORM -->
 
-
       <div class="profile-card">
-
         <h2>Personal Information</h2>
-
         <div class="form-row">
-
           <div class="form-group">
             <label>Name</label>
-            <input [(ngModel)]="user.name">
+            <input [(ngModel)]="user.name" [disabled]="!canAccessAI">
           </div>
 
           <div class="form-group">
             <label>Email</label>
-            <input [(ngModel)]="user.email">
+            <input [(ngModel)]="user.email" [disabled]="!canAccessAI">
           </div>
-
         </div>
 
         <div class="form-row">
-
           <div class="form-group">
             <label>Height</label>
-            <input type="number" [(ngModel)]="user.height">
+            <input type="number" [(ngModel)]="user.height" [disabled]="!canAccessAI">
           </div>
 
           <div class="form-group">
             <label>Weight</label>
-            <input type="number" [(ngModel)]="user.weight">
+            <input type="number" [(ngModel)]="user.weight" [disabled]="!canAccessAI">
           </div>
-
         </div>
 
         <div class="form-row">
-
           <div class="form-group">
             <label>Blood Group</label>
-            <input [(ngModel)]="user.bloodGroup">
+            <input [(ngModel)]="user.bloodGroup" [disabled]="!canAccessAI">
           </div>
-
           <div class="form-group">
             <label>Age</label>
-            <input type="number" [(ngModel)]="user.age" min="0">
+            <input type="number" [(ngModel)]="user.age" [disabled]="!canAccessAI" min="0">
           </div>
-
         </div>
 
         <!-- DISEASES -->
 
         <div class="form-group">
-
           <label>Known Diseases</label>
-
           <div class="tags-container" *ngIf="knownDiseases.length > 0">
-
             <div class="tag" *ngFor="let d of knownDiseases; let i=index">
               {{ d }}
-              <span (click)="removeDisease(i)">×</span>
+              <span (click)="canAccessAI && removeDisease(i)">x</span>
             </div>
-
           </div>
 
           <input type="text" placeholder="Type disease..." [(ngModel)]="diseaseInput" (input)="onDiseaseInput()"
-            (keydown.enter)="addDisease($event)">
-
+            (keydown.enter)="addDisease($event)" [disabled]="!canAccessAI">
           <div class="suggestions" *ngIf="filteredDiseases.length > 0">
-
             <div *ngFor="let s of filteredDiseases" (click)="selectDisease(s)">
               {{ s.name }}
             </div>
-
           </div>
-
         </div>
 
         <div class="form-actions">
-
           <button class="discard-btn" (click)="discardPersonalChanges()" [disabled]="isDiscarding">
-
             <ng-container *ngIf="isDiscarding">
               <i class="fa-solid fa-spinner fa-spin"></i> Resetting...
             </ng-container>
@@ -123,86 +97,62 @@
             <ng-container *ngIf="!isDiscarding">
               Discard Changes
             </ng-container>
-
           </button>
 
           <button class="save-btn" (click)="saveProfile()" [disabled]="isSavingProfile">
-
-            <ng-container *ngIf="isSavingProfile">
+            <ng-container *ngIf="isSavingProfile" [disabled]="isSavingProfile || !canAccessAI">
               <i class="fa-solid fa-spinner fa-spin"></i> Saving...
             </ng-container>
 
             <ng-container *ngIf="!isSavingProfile">
               Save Changes
             </ng-container>
-
           </button>
-
         </div>
-
+        <p *ngIf="!canAccessAI" class="upgrade-text">
+          🔒 Upgrade to edit profile details
+        </p>
       </div>
 
       <!-- ===== TOP: REPORTS + PRESCRIPTIONS ===== -->
+
       <div class="profile-card reports-section">
-
-
         <div class="reports-columns">
 
           <!-- REPORTS -->
           <div class="reports-col">
-
             <h3>Uploaded Reports</h3>
-
             <div *ngIf="reports.length === 0" class="empty-state">
               No reports uploaded yet
             </div>
-
             <div class="file-list">
-
               <div class="file-card" *ngFor="let r of reports">
-
-                <div class="file-icon">
-                </div>
-
+                <div class="file-icon"></div>
                 <div class="file-info">
                   <div class="file-name">{{ r.file_name }}</div>
                   <div class="file-date">
                     {{ r.uploaded_at | date:'mediumDate' }}
                   </div>
                 </div>
-
                 <button class="view-btn" (click)="openFile(r.file_path, 'reports')">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-
               </div>
-
             </div>
-
           </div>
-
 
           <!-- VERTICAL DIVIDER -->
           <div class="vertical-divider"></div>
 
-
           <!-- PRESCRIPTIONS -->
           <div class="reports-col">
-
             <h3>Uploaded Prescriptions</h3>
-
             <div *ngIf="prescriptions.length === 0" class="empty-state">
               No prescriptions uploaded yet
             </div>
-
             <div class="file-list">
-
               <div class="file-card" *ngFor="let p of prescriptions">
-
-                <div class="file-icon">
-                
-                </div>
-
+                <div class="file-icon"></div>
                 <div class="file-info">
                   <div class="file-name">{{ p.file_name }}</div>
                   <div class="file-date">
@@ -213,90 +163,63 @@
                 <button class="view-btn" (click)="openFile(p.file_path, 'prescriptions')">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
-
 
         <!-- ===== HORIZONTAL DIVIDER ===== -->
 
         <div class="horizontal-divider"></div>
 
-
         <!-- ===== BP HISTORY ===== -->
 
         <div class="bp-section">
-
           <div class="bp-header">
-
             <h3>Blood Pressure History</h3>
-
             <div class="bp-controls">
-
               <select [(ngModel)]="selectedMonth" (change)="filterByMonth()" class="month-dropdown">
-
                 <option value="all">All Records</option>
-
                 <ng-container *ngFor="let m of availableMonths">
+                  <option *ngIf="m !== 'all'" [value]="m" [disabled]="!canAccessAI && m !== getCurrentMonthKey()">
 
-                  <option *ngIf="m !== 'all'" [value]="m">
                     {{ formatMonth(m) }}
+                    {{ !canAccessAI && m !== getCurrentMonthKey() ? ' 🔒' : '' }}
                   </option>
-
                 </ng-container>
-
               </select>
-
             </div>
 
           </div>
+
           <div class="bp-table-wrapper">
-
-
             <table class="bp-history-table" *ngIf="filteredBPRecords.length">
-
               <tr>
                 <th>Date</th>
                 <th>Systolic</th>
                 <th>Diastolic</th>
                 <th>Pulse</th>
               </tr>
-
               <tr *ngFor="let bp of filteredBPRecords">
-
                 <td>{{ bp.recorded_at | date:'mediumDate' }}</td>
                 <td>{{ bp.systolic }}</td>
                 <td>{{ bp.diastolic }}</td>
                 <td>{{ bp.pulse || '-' }}</td>
-
               </tr>
-
             </table>
           </div>
           <div *ngIf="filteredBPRecords.length === 0" class="empty-state">
             No BP records for this month
           </div>
-
         </div>
-
       </div>
-
     </div>
-
   </div>
-
 
   <!-- ================= SECURITY PAGE ================= -->
 
   <div *ngIf="activeTab === 'security'" class="profile-wrapper">
-
     <div class="profile-content">
-
       <div class="settings-container">
 
         <!-- SIGN IN EMAIL -->
@@ -304,116 +227,81 @@
           <div class="settings-left">
             <strong>Sign-in Email</strong>
           </div>
-
           <div class="settings-right">
             {{ user?.email }}
           </div>
         </div>
 
-
         <!-- PASSWORD -->
         <div class="settings-row">
-
           <div class="settings-left">
             <strong>Password</strong>
           </div>
-
           <div class="settings-right">
             <button class="link-btn" (click)="showPasswordForm = !showPasswordForm">
               Change password
             </button>
           </div>
-
         </div>
 
         <!-- PASSWORD FORM -->
         <div *ngIf="showPasswordForm" class="settings-expand">
-
           <div class="password-form">
-
             <input type="password" placeholder="Current Password" [(ngModel)]="currentPassword" />
-
             <input type="password" placeholder="New Password" [(ngModel)]="newPassword" />
-
             <input type="password" placeholder="Confirm New Password" [(ngModel)]="confirmPassword" />
-
             <button class="save-btn" (click)="changePassword()">
               Update Password
             </button>
-
           </div>
-
         </div>
-
 
         <!-- 2FA -->
         <div class="settings-row">
-
           <div class="settings-left">
             <strong>2-FA authentication</strong>
           </div>
-
           <div class="settings-right">
-
             <label class="switch">
               <input type="checkbox" [(ngModel)]="twoFactorEnabled">
               <span class="slider"></span>
             </label>
-
           </div>
-
         </div>
-
 
         <!-- EMAIL AUTH -->
         <div class="settings-row" *ngIf="twoFactorEnabled">
-
           <div class="settings-left">
             <strong>Email Authentication</strong>
           </div>
-
           <div class="settings-right">
-
             <button class="outline-btn" (click)="sendEmailOTP()" [disabled]="emailOtpSent || user?.two_factor_enabled">
-
               <ng-container *ngIf="!user?.two_factor_enabled">
                 Send OTP
               </ng-container>
-
               <ng-container *ngIf="user?.two_factor_enabled">
                 Verified ✓
               </ng-container>
-
             </button>
-
           </div>
-
         </div>
-
 
         <!-- OTP INPUT -->
         <div *ngIf="twoFactorEnabled && emailOtpSent && !user?.two_factor_enabled" class="settings-expand">
           <div class="otp-form">
-
             <input type="text" placeholder="Enter OTP" [(ngModel)]="emailOtp">
-
             <button class="verify-btn" (click)="verifyEmailOTP()">
               Verify
             </button>
-
           </div>
-
         </div>
 
         <!-- RECOVERY EMAIL -->
         <div class="settings-row">
-
           <div class="settings-left">
             <strong>Recovery Email</strong>
           </div>
-
           <div class="settings-right recovery-form">
-
             <input type="email" [(ngModel)]="recoveryEmail" [disabled]="!isEditingRecoveryEmail"
               placeholder="example@email.com">
 
@@ -426,41 +314,112 @@
             <button class="outline-btn" *ngIf="isEditingRecoveryEmail" (click)="saveRecoveryEmail()">
               Save
             </button>
-
           </div>
-
         </div>
 
-      </div>
+        <!-- UPGRADE BUTTON -->
+        <div class="upgrade-row">
+          <div>
+            <strong>Upgrade to Premium</strong>
+            <div class="upgrade-sub">
 
-      <!-- FOOTER ACTIONS -->
+            </div>
+          </div>
+          <button class="upgrade-btn" (click)="payNow()" [disabled]="isPaying">
+            <ng-container *ngIf="!isPaying">
+              <i class="fa-solid fa-crown"></i> Upgrade ₹99
+            </ng-container>
 
-      <div class="security-footer">
-
-        <div class="security-footer-inner">
-
-          <button class="danger-btn" (click)="deactivateAccount()">
-            <i class="fa-solid fa-trash"></i> Deactivate Account
+            <ng-container *ngIf="isPaying">
+              <i class="fa-solid fa-spinner fa-spin"></i> Processing...
+            </ng-container>
           </button>
 
-          <div class="footer-actions">
+          <div class="plan-info" *ngIf="user?.plan_type === 'premium'">
+            <div class="plan-badge">
+              👑 Premium Active
+            </div>
+            <div class="plan-expiry">
+              Expires on: {{ user?.plan_expires | date:'mediumDate' }}
+            </div>
+          </div>
 
-            <button class="cancel-btn" (click)="cancelSecurityChanges()">
-              Cancel
-            </button>
+          <div class="plan-info free" *ngIf="user?.plan_type !== 'premium'">
+            ⚠️ You are on Free Plan
+          </div>
+          <div *ngIf="user?.plan_type === 'premium'">
+            {{ getDaysLeft() }} days left
+          </div>
+        </div>
+        <!-- PAYMENT HISTORY -->
+        <div class="payment-history">
 
-            <button class="save-btn" (click)="saveSecuritySettings()">
-              Save
-            </button>
+          <h4>Payment History</h4>
+
+          <!-- FILTERS -->
+          <div class="payment-filters">
+            <button (click)="selectedPaymentFilter='all'">All</button>
+            <button (click)="selectedPaymentFilter='success'">Success</button>
+            <button (click)="selectedPaymentFilter='failure'">Failed</button>
+          </div>
+
+          <!-- LOADING -->
+          <div *ngIf="loadingPayments" class="payment-loading">
+            Loading payments...
+          </div>
+
+          <!-- TABLE -->
+          <div class="payment-table-wrapper" *ngIf="!loadingPayments">
+
+            <table class="payment-table" *ngIf="paymentHistory.length > 0">
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let p of getFilteredPayments()">
+                  <td>{{ p.txn_id }}</td>
+                  <td>₹{{ p.amount }}</td>
+                  <td>
+                    <span class="payment-badge" [ngClass]="p.status">
+                      {{ p.status }}
+                    </span>
+                  </td>
+                  <td>{{ p.created_at | date:'medium' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- EMPTY -->
+            <div *ngIf="paymentHistory.length === 0" class="empty-payments">
+              No payments yet
+            </div>
 
           </div>
 
         </div>
 
+        <!-- FOOTER ACTIONS -->
+        <div class="security-footer">
+          <div class="security-footer-inner">
+            <button class="danger-btn" (click)="deactivateAccount()">
+              <i class="fa-solid fa-trash"></i> Deactivate Account
+            </button>
+            <div class="footer-actions">
+              <button class="cancel-btn" (click)="cancelSecurityChanges()">
+                Cancel
+              </button>
+              <button class="save-btn" (click)="saveSecuritySettings()">
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
-
   </div>
-
-</div>

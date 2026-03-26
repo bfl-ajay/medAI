@@ -659,6 +659,19 @@
   overflow-wrap: anywhere;
 }
 
+.blurred-text {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+  margin-top: 10px;
+}
+
+.upgrade-text {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #F0131A;
+  font-weight: 600;
+}
 
 /* ===== RESPONSIVE ===== */
 
@@ -684,20 +697,22 @@
   .submit-btn {
     width: 100%
   }
+
   .ocr-text {
-      display: block;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
+    display: block;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
 
   .report-item {
-  width: 100%;
-}
-.report-list,
-.analysis-box {
-  width: 100%;
-}
+    width: 100%;
+  }
+
+  .report-list,
+  .analysis-box {
+    width: 100%;
+  }
 
 }
 

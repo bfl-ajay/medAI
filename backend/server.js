@@ -4,7 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const diseaseRoutes = require('./routes/diseaseRoutes');
-
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
     console.log("Incoming:", req.method, req.url);
     next();
@@ -28,7 +28,7 @@ require('./db');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/diseases', diseaseRoutes);
-
+app.use("/api/payment", paymentRoutes);
 app.get('/', (req, res) => {
     res.send('Welcome to the Health Adviser API');
 });
@@ -38,5 +38,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
 
 });
-
-

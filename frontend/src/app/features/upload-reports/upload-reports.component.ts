@@ -29,7 +29,13 @@ export class UploadReportsComponent {
   reportAnalysisMap: { [key: number]: any } = {};
   reportLoadingId: number | null = null;
   debouncer: any;
+  isPremium = false;
+  isTrialActive = false;
+  reportFilterMap: { [key: number]: string } = {}; F
 
+  get canAccessAI(): boolean {
+    return this.isPremium || this.isTrialActive;
+  }
 
   constructor(
     private authService: AuthService,
@@ -48,6 +54,14 @@ export class UploadReportsComponent {
       if (event.type === 'analyze') {
         this.handleAnalyze(event.id);
       }
+    });
+    this.authService.getProfile().subscribe((res: any) => {
+
+      const plan = this.authService.getUserPlanState(res);
+
+      this.isPremium = plan.isPremium;
+      this.isTrialActive = plan.isTrialActive;
+
     });
   }
 
@@ -75,14 +89,14 @@ export class UploadReportsComponent {
         this.uploading = false;
         this.alert.error("Upload failed");
       }
-      
+
     });
   }
 
   deleteReport(id: number) {
     this.authService.deleteReport(id).subscribe(() => {
 
-      this.cache.delete(`report_${id}`); 
+      this.cache.delete(`report_${id}`);
       this.loadReports();
 
     });
@@ -430,6 +444,14 @@ export class UploadReportsComponent {
 
   onAnalyzeClick(id: number) {
     this.debouncer.next({ type: 'analyze', id });
+  }
+
+  getFilteredMetrics(reportId: number, metrics: any[]) {
+    const filter = this.reportFilterMap[reportId];
+
+    if (!filter || filter === 'all') return metrics;
+
+    return metrics.filter(m => m.status === filter);
   }
 }
 

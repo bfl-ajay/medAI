@@ -10,6 +10,8 @@ import { environment } from 'src/environments/environment';
 import { DebounceService } from 'src/app/core/services/debounce.service';
 import { CacheService } from 'src/app/core/services/cache.service';
 import { ThrottleService } from 'src/app/core/services/throttle.service';
+import { PaymentService } from 'src/app/core/services/payment.service';
+
 
 type ProfileEvent =
     | { type: 'disease-search'; query: string }
@@ -55,7 +57,20 @@ export class ProfileComponent {
     isSavingProfile = false;
     isDiscarding = false;
     otpThrottler: any;
+    trialDaysLeft: number = 0;
+    isPremium = false;
+    isTrialActive = false;
+    isPaying = false;
+    paymentHistory: any[] = [];
+    loadingPayments = false;
+    selectedPaymentFilter: string = 'all';
 
+    get canAccessAI(): boolean {
+        if (this.isPremium && this.user?.plan_expires) {
+            return new Date(this.user.plan_expires) > new Date();
+        }
+        return this.isTrialActive;
+    }
     get profileCompletion(): number {
         return this.getProfileCompletion();
     }
@@ -68,11 +83,13 @@ export class ProfileComponent {
         private alert: AlertService,
         private debounceService: DebounceService,
         private throttleService: ThrottleService,
-        private cache: CacheService
+        private cache: CacheService,
+        private paymentService: PaymentService
     ) { }
 
 
     ngOnInit() {
+
         this.debouncer = this.debounceService.createDebouncer<ProfileEvent>(500);
 
         this.debouncer.subscribe((event: ProfileEvent) => {
@@ -108,18 +125,21 @@ export class ProfileComponent {
             }
 
         });
-        this.authService.getProfile().subscribe((data: any) => {
-            this.profile = data;
-            this.user = data;
+        this.authService.getProfile().subscribe((res: any) => {
 
-            this.twoFactorEnabled = data.two_factor_enabled === 1;
+            this.profile = res;
+            this.user = res;
+            console.log("PROFILE DATA:", res);
+            const plan = this.authService.getUserPlanState(res);
+            this.knownDiseases = res.knownDiseases || [];
+            this.isPremium = plan.isPremium;
+            this.isTrialActive = plan.isTrialActive;
+            this.trialDaysLeft = plan.trialDaysLeft;
 
-            if (data.knownDiseases) {
-                this.knownDiseases = [...data.knownDiseases];
-            }
-            this.recoveryEmail = data.recovery_email || '';
-
-
+            this.twoFactorEnabled = res.two_factor_enabled === 1;
+            console.log("Premium:", this.isPremium);
+            console.log("TrialActive:", this.isTrialActive);
+            console.log("Days left:", this.trialDaysLeft);
         });
 
         // REPORTS
@@ -155,7 +175,15 @@ export class ProfileComponent {
             this.extractMonths();
 
         });
-
+        if (this.activeTab === 'security') {
+            this.getPaymentHistory();
+        }
+        this.route.queryParams.subscribe(params => {
+            if (params['tab'] === 'security') {
+                this.activeTab = 'security';
+                this.getPaymentHistory(); 
+            }
+        });
 
     }
     saveProfile() {
@@ -234,9 +262,13 @@ export class ProfileComponent {
 
         if (!filePath) return;
 
+        if (filePath.startsWith('http')) {
+            window.open(filePath, '_blank'); // ✅ Cloudinary
+            return;
+        }
+
         const url = `${environment.apiUrl}/uploads/${type}/${filePath}`;
         window.open(url, '_blank');
-
     }
 
     onDiseaseInput() {
@@ -422,14 +454,33 @@ export class ProfileComponent {
         this.filterByMonth();
 
     }
-
     filterByMonth() {
 
+        const currentMonth = this.getCurrentMonthKey();
+
+        // HANDLE "ALL" FIRST
         if (this.selectedMonth === 'all') {
 
-            this.filteredBPRecords = [...this.bpRecords];
+            if (this.canAccessAI) {
+                // premium → full access
+                this.filteredBPRecords = [...this.bpRecords];
+
+            } else {
+                // free → only current month
+                this.filteredBPRecords = this.bpRecords.filter(bp => {
+                    const d = new Date(bp.recorded_at);
+                    const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+                    return key === currentMonth;
+                });
+            }
 
         } else {
+
+            //  BLOCK non-current months for free users
+            if (!this.canAccessAI && this.selectedMonth !== currentMonth) {
+                this.filteredBPRecords = [];
+                return;
+            }
 
             const [year, month] = this.selectedMonth.split('-');
 
@@ -773,4 +824,71 @@ export class ProfileComponent {
 
     }
 
+
+    payNow() {
+        if (this.isPaying) return;
+
+        this.isPaying = true;
+
+        this.paymentService.initiatePayment({
+            amount: 99,
+            name: this.user?.name || 'User',
+            email: this.user?.email
+        }).subscribe({
+            next: (res: any) => {
+                this.redirectToPayU(res);
+            },
+            error: () => {
+                this.isPaying = false;
+                this.alert.error("Payment failed. Try again.");
+            }
+        });
+    }
+
+    redirectToPayU(data: any) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.action;
+
+        Object.keys(data).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key];
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    getPaymentHistory() {
+        this.loadingPayments = true;
+
+        this.http.get('http://localhost:5000/api/payment/history')
+            .subscribe({
+                next: (res: any) => {
+                    this.paymentHistory = res;
+                    this.loadingPayments = false;
+                },
+                error: () => {
+                    this.loadingPayments = false;
+                }
+            });
+    }
+    getFilteredPayments() {
+        if (this.selectedPaymentFilter === 'all') return this.paymentHistory;
+
+        return this.paymentHistory.filter(p =>
+            p.status.toLowerCase() === this.selectedPaymentFilter
+        );
+    }
+    getDaysLeft(): number {
+        if (!this.user?.plan_expires) return 0;
+
+        const expiry = new Date(this.user.plan_expires).getTime();
+        const now = new Date().getTime();
+
+        return Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
+    }
 }

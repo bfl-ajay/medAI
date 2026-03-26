@@ -1,0 +1,38 @@
+<div class="payment-card success">
+
+  <div class="icon">
+    <i class="fa-solid fa-circle-check"></i>
+  </div>
+
+  <h2>Payment Successful</h2>
+
+  <p class="message">
+    Your payment has been completed successfully 
+  </p>
+
+  <!-- DETAILS -->
+  <div class="details">
+    <div class="row">
+      <span>Transaction ID</span>
+      <strong>{{ txnid || 'N/A' }}</strong>
+    </div>
+
+    <div class="row">
+      <span>Amount</span>
+      <strong>₹{{ amount || '0' }}</strong>
+    </div>
+
+    <div class="row">
+      <span>Status</span>
+      <strong class="status success-text">{{ status | titlecase }}</strong>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="primary-btn" (click)="goToSecurity()">
+      Go Back
+    </button>
+  </div>
+
+</div>

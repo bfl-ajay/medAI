@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthInterceptor } from './core/intercptors/auth.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
@@ -20,6 +21,8 @@ import { AddInfoComponent } from './features/add-info/add-info.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { VerifyOtpComponent } from './features/auth/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { PaymentFailureComponent } from './features/payment-failure/payment-failure.component';
+import { PaymentSuccessComponent } from './features/payment-success/payment-success.component';
 
 @NgModule({
     declarations: [
@@ -34,14 +37,17 @@ import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-
         UploadPrescriptionComponent,
         AddInfoComponent,
         ProfileComponent,
-        ForgotPasswordComponent
+        ForgotPasswordComponent,
+        PaymentSuccessComponent,
+        PaymentFailureComponent
     ],
     imports: [
         BrowserModule,
         FormsModule,
         AppRoutingModule,
         HttpClientModule,
-        RouterModule
+        RouterModule,
+        CommonModule
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,
