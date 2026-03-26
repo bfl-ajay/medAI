@@ -13,7 +13,8 @@ import { AddInfoComponent } from './features/add-info/add-info.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { VerifyOtpComponent } from './features/auth/verify-otp/verify-otp.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
-
+import { PaymentFailureComponent } from './features/payment-failure/payment-failure.component';
+import {PaymentSuccessComponent } from './features/payment-success/payment-success.component'
 
 const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -27,7 +28,8 @@ const routes: Routes = [
     { path: 'upload-reports', component: UploadReportsComponent, canActivate: [AuthGuard] },
     { path: 'upload-prescription', component: UploadPrescriptionComponent, canActivate: [AuthGuard] },
     { path: 'add-info', component: AddInfoComponent, canActivate: [AuthGuard] },
-
+    { path: 'payment-success', component: PaymentSuccessComponent },
+    { path: 'payment-failure', component: PaymentFailureComponent }
 ];
 
 const routerOptions: ExtraOptions = {

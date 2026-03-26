@@ -171,7 +171,7 @@ input:focus {
 }
 
 .outline-btn {
-    border: 1px solid var(--border-color);
+    border: 1px solid green;
     background: white;
     padding: 8px 14px;
     border-radius: 8px;
@@ -534,6 +534,82 @@ input:focus {
     font-weight: 700;
 }
 
+.upgrade-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 17px;
+    margin-top: 15px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e8fdf8, #f0fffc);
+    border: 1px solid #d2f5ee;
+}
+
+.upgrade-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(39, 174, 96, 0.35);
+}
+
+/* BUTTON */
+
+.upgrade-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+
+    background: linear-gradient(135deg, var(--primary-teal), #2ecc71);
+    color: #100f0f;
+
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* hover */
+
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(45, 159, 149, 0.3);
+}
+
+/* icon */
+
+.upgrade-btn i {
+    font-size: 14px;
+}
+
+.plan-badge.expired {
+    background: #e74c3c;
+    color: white;
+}
+
+.upgrade-text {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #f01313;
+    font-weight: 600;
+}
 
 /* ===== FOOTER ===== */
 
@@ -627,6 +703,107 @@ input:disabled {
     color: #000;
 }
 
+.payment-history {
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+.payment-filters {
+    display: flex;
+    gap: 8px;
+    margin-left: 20px;
+    margin-bottom: 25px;
+    margin-top: 20px;
+}
+
+.payment-filters button {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #eef2f7;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.payment-filters button:hover {
+    background: #dbeafe;
+}
+
+.payment-table-wrapper {
+    overflow-x: auto;
+}
+
+.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.payment-table th {
+    text-align: left;
+    padding: 10px;
+    background: #f1f5f9;
+}
+
+.payment-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e6ecf5;
+}
+
+.payment-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* STATUS COLORS */
+.payment-badge.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.payment-badge.failure {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.payment-loading {
+    font-size: 13px;
+    color: #666;
+}
+
+.empty-payments {
+    font-size: 13px;
+    color: #999;
+    padding: 10px;
+}
+
+
+.plan-info {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.plan-info.free {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+.plan-badge {
+    font-weight: 600;
+    color: #15803d;
+}
+
+.plan-expiry {
+    font-size: 12px;
+    color: #555;
+}
+
 /* ===== MOBILE RESPONSIVE ===== */
 
 @media (max-width:768px) {
@@ -643,7 +820,7 @@ input:disabled {
     }
 
     .form-actions {
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
     }
 
@@ -761,9 +938,9 @@ input:disabled {
     /* BP TABLE */
 
     .bp-header {
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-start;
-        gap: 8px;
+        gap: 20px;
     }
 
 

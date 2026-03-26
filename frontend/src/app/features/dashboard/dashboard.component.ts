@@ -19,6 +19,7 @@ type DebounceEvent =
 })
 export class DashboardComponent implements OnInit {
 
+
   profile: any;
   aiPlan: any;
   debouncer: any;
@@ -45,9 +46,13 @@ export class DashboardComponent implements OnInit {
   availableMonths: string[] = [];
   filteredBPRecords: any[] = [];
   labMetrics: any = {};
+  trialDaysLeft: number = 0;
+  isPremium = false;
+  isTrialActive = false;
 
   isLoading = false;
   isPlanLoading = false;
+
 
 
   isSidebarOpen = false;
@@ -97,6 +102,11 @@ export class DashboardComponent implements OnInit {
         this.updateDerivedProfileFields(); //use helper
 
         this.tryCreateRadarChart();
+        const plan = this.authService.getUserPlanState(res);
+
+        this.isPremium = plan.isPremium;
+        this.isTrialActive = plan.isTrialActive;
+        this.trialDaysLeft = plan.trialDaysLeft;
       }
     );
     // Load reminders
@@ -933,16 +943,29 @@ export class DashboardComponent implements OnInit {
 
   onGetPlanClick() {
 
-    // 🔁 If already shown → HIDE
+    // 🚫 BLOCK ACCESS (UI ONLY)
+    if (!this.canAccessAI) {
+      this.alert.warning("Upgrade to access AI Plan");
+      this.router.navigate(['/profile']); // or upgrade section
+      return;
+    }
+
+    // 🔁 Toggle hide
     if (this.aiPlan) {
       this.aiPlan = null;
       return;
     }
 
-    // 🔥 Else → trigger debouncer
     this.debouncer.next({ type: 'plan' });
   }
+  get canAccessAI(): boolean {
+    return this.isPremium || this.isTrialActive;
+  }
 
+  onLockedClick() {
+    this.alert.warning("Upgrade to unlock this feature");
+    this.router.navigate(['/profile']);
+  }
 
   // LOGOUT
 
