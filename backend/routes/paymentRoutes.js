@@ -54,8 +54,8 @@ router.post("/pay", authMiddleware, async (req, res) => {
             phone: "9999999999",
             hash,
             action: "https://test.payu.in/_payment",
-            surl: "http://localhost:5000/api/payment/success",
-            furl: "http://localhost:5000/api/payment/failure",
+            surl: "https://medai-production-371c.up.railway.app/api/payment/success",
+            furl: "https://medai-production-371c.up.railway.app/api/payment/failure",
         });
 
     } catch (err) {
@@ -135,7 +135,7 @@ router.post('/success', async (req, res) => {
         console.error("❌ SUCCESS DB ERROR:", err);
     }
 
-    res.redirect(`http://localhost:4200/payment-success?status=${status}&txnid=${txnid}&amount=${amount}`);
+    res.redirect(`https://med-ai-f25g.vercel.app/payment-success?status=${status}&txnid=${txnid}&amount=${amount}`);
 });
 
 //
@@ -169,7 +169,7 @@ router.post("/failure", async (req, res) => {
         console.error("❌ FAILURE DB ERROR:", err);
     }
 
-    res.redirect(`http://localhost:4200/payment-failure?txnid=${txnid}&status=${normalizedStatus}`);
+    res.redirect(`https://med-ai-f25g.vercel.app/payment-failure?txnid=${txnid}&status=${normalizedStatus}`);
 });
 
 //
