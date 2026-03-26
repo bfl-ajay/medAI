@@ -10,6 +10,8 @@ import { environment } from 'src/environments/environment';
 import { DebounceService } from 'src/app/core/services/debounce.service';
 import { CacheService } from 'src/app/core/services/cache.service';
 import { ThrottleService } from 'src/app/core/services/throttle.service';
+import { PaymentService } from 'src/app/core/services/payment.service';
+
 
 type ProfileEvent =
     | { type: 'disease-search'; query: string }
@@ -55,6 +57,9 @@ export class ProfileComponent {
     isSavingProfile = false;
     isDiscarding = false;
     otpThrottler: any;
+    trialDaysLeft: number = 0;
+    isPremium = false;
+    isTrialActive = false;
 
     get profileCompletion(): number {
         return this.getProfileCompletion();
@@ -68,11 +73,13 @@ export class ProfileComponent {
         private alert: AlertService,
         private debounceService: DebounceService,
         private throttleService: ThrottleService,
-        private cache: CacheService
+        private cache: CacheService,
+        private paymentService: PaymentService
     ) { }
 
 
     ngOnInit() {
+
         this.debouncer = this.debounceService.createDebouncer<ProfileEvent>(500);
 
         this.debouncer.subscribe((event: ProfileEvent) => {
@@ -108,18 +115,21 @@ export class ProfileComponent {
             }
 
         });
-        this.authService.getProfile().subscribe((data: any) => {
-            this.profile = data;
-            this.user = data;
+        this.authService.getProfile().subscribe((res: any) => {
 
-            this.twoFactorEnabled = data.two_factor_enabled === 1;
+            this.profile = res;
+            this.user = res;
+            console.log("PROFILE DATA:", res);
+            const plan = this.authService.getUserPlanState(res);
 
-            if (data.knownDiseases) {
-                this.knownDiseases = [...data.knownDiseases];
-            }
-            this.recoveryEmail = data.recovery_email || '';
+            this.isPremium = plan.isPremium;
+            this.isTrialActive = plan.isTrialActive;
+            this.trialDaysLeft = plan.trialDaysLeft;
 
-
+            this.twoFactorEnabled = res.two_factor_enabled === 1;
+            console.log("Premium:", this.isPremium);
+            console.log("TrialActive:", this.isTrialActive);
+            console.log("Days left:", this.trialDaysLeft);
         });
 
         // REPORTS
@@ -155,7 +165,6 @@ export class ProfileComponent {
             this.extractMonths();
 
         });
-
 
     }
     saveProfile() {
@@ -772,5 +781,33 @@ export class ProfileComponent {
         });
 
     }
+
+    payNow() {
+        this.paymentService.initiatePayment({
+            amount: 99,
+            name: 'Swati',
+            email: 'test@gmail.com'
+        }).subscribe((res: any) => {
+            this.redirectToPayU(res);
+        });
+    }
+
+    redirectToPayU(data: any) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.action;
+
+        Object.keys(data).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key];
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
 
 }

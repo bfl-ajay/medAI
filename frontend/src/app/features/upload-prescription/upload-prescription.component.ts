@@ -25,6 +25,7 @@ export class UploadPrescriptionComponent {
   loadingId: number | null = null;
   debouncer: any;
   uploading = false;
+  canAccessAI: boolean = true;
 
   constructor(
     private authService: AuthService,

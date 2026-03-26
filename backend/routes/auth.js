@@ -105,10 +105,10 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const sql = `
-            INSERT INTO users 
-            (name, email, password, dob, height, weight, bloodGroup, known_diseases, mobile_no, gender) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+INSERT INTO users 
+(name, email, password, dob, height, weight, bloodGroup, known_diseases, mobile_no, gender, plan_type, trial_start) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'free', NOW())
+`;
 
         const knownDiseasesJson = Array.isArray(knownDiseases)
             ? JSON.stringify(knownDiseases)
@@ -261,7 +261,9 @@ router.get('/profile', authMiddleware, async (req, res) => {
                 known_diseases,
                 photo,
                 two_factor_enabled,
-                 recovery_email 
+                 recovery_email,
+                 plan_type, 
+                 trial_start
             FROM users
             WHERE id = ?
         `;
@@ -350,6 +352,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
             recovery_email: user.recovery_email,
             two_factor_enabled: user.two_factor_enabled,
             email_verified: user.email_verified,
+            plan_type: user.plan_type,
+            trial_start: user.trial_start,
             photo: user.photo
                 ? `http://localhost:5000/uploads/profile/${user.photo}`
                 : null
@@ -405,7 +409,9 @@ router.put('/profile', authMiddleware, async (req, res) => {
 });
 const axios = require('axios');
 
-router.post('/ai-plan', authMiddleware, async (req, res) => {
+const planMiddleware = require('../middleware/planMiddleware');
+
+router.post('/ai-plan', authMiddleware, planMiddleware, async (req, res) => {
     try {
         const bmi = req.body.bmi;
         const diseases = req.body.knownDiseases || [];

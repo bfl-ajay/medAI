@@ -58,8 +58,8 @@
 
             <div class="action-buttons">
               <button type="button" class="analyze-btn" (click)="onAnalyzeClick(r.id)">
-                <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'"></i> Analyze
-                {{ reportAnalysisMap[r.id] ? '' : '' }}
+                <i class="fa-solid" [ngClass]="reportAnalysisMap[r.id] ? 'fa-eye-slash' : 'fa-microscope'">
+                </i>   Analyze
               </button>
 
               <button class="delete-btn" (click)="deleteReport(r.id)"> <i class="fa-solid fa-trash"></i>
@@ -73,66 +73,139 @@
           </div>
 
           <!-- ANALYSIS BELOW -->
-          <div *ngIf="reportAnalysisMap[r.id]" class="analysis-box">
+          <div *ngIf="reportAnalysisMap[r.id]">
+
+            <div class="analysis-box">
 
 
-            <p class="report-type">{{ reportAnalysisMap[r.id].reportType }}</p>
+              <p class="report-type">{{ reportAnalysisMap[r.id].reportType }}</p>
 
-            <h4>Key Metrics</h4>
+              <h4>Key Metrics</h4>
 
-            <div *ngIf="reportAnalysisMap[r.id].metrics" class="metrics-grid">
+              <div *ngIf="reportAnalysisMap[r.id].metrics" class="metrics-grid">
 
-              <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics">
+                <!-- ✅ FULL ACCESS (TRIAL / PREMIUM) -->
+                <ng-container *ngIf="canAccessAI">
 
-                <div class="metric-header">
+                  <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics">
 
-                  <div class="metric-title">
-                    {{ m.name }}
-                  </div>
-
-                  <span class="metric-status" [ngClass]="m.status">
-                    {{ m.status | titlecase }}
-                  </span>
-
-                </div>
-                <!-- INFO CARD (INLINE) -->
-
-                <div class="metric-info-card-inline">
-
-                  <div class="metric-stats">
-
-                    <div class="stat-box">
-                      <span class="label">Your Result</span>
-                      <span class="value">
-                        {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                    <div class="metric-header">
+                      <div class="metric-title">{{ m.name }}</div>
+                      <span class="metric-status" [ngClass]="m.status">
+                        {{ m.status | titlecase }}
                       </span>
                     </div>
 
-                    <div class="stat-box">
-                      <span class="label">Normal Range</span>
-                      <span class="value">
-                        {{ m.range }}
-                      </span>
+                    <div class="metric-info-card-inline">
+                      <div class="metric-stats">
+
+                        <div class="stat-box">
+                          <span class="label">Your Result</span>
+                          <span class="value">
+                            {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                          </span>
+                        </div>
+
+                        <div class="stat-box">
+                          <span class="label">Normal Range</span>
+                          <span class="value">{{ m.range }}</span>
+                        </div>
+
+                      </div>
+
+                      <div class="metric-source">
+                        <a [href]="'https://en.wikipedia.org/wiki/' + (m.name | lowercase)" target="_blank">
+                          Source: Wikipedia
+                          <i class="fa-solid fa-up-right-from-square"></i>
+                        </a>
+                      </div>
                     </div>
 
                   </div>
 
-                  <div class="metric-source">
-                    <a [href]="'https://en.wikipedia.org/wiki/' + (m.name | lowercase)" target="_blank">
+                </ng-container>
 
-                      Source: Wikipedia
-                      <i class="fa-solid fa-up-right-from-square"></i>
 
-                    </a>
+                <!-- 🔒 PARTIAL ACCESS (EXPIRED USERS) -->
+                <ng-container *ngIf="!canAccessAI">
+
+                  <!-- ✅ FIRST 2 VISIBLE -->
+                  <div class="metric-card" *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(0, 2)">
+
+                    <div class="metric-header">
+                      <div class="metric-title">{{ m.name }}</div>
+                      <span class="metric-status" [ngClass]="m.status">
+                        {{ m.status | titlecase }}
+                      </span>
+                    </div>
+
+                    <div class="metric-info-card-inline">
+                      <div class="metric-stats">
+
+                        <div class="stat-box">
+                          <span class="label">Your Result</span>
+                          <span class="value">
+                            {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                          </span>
+                        </div>
+
+                        <div class="stat-box">
+                          <span class="label">Normal Range</span>
+                          <span class="value">{{ m.range }}</span>
+                        </div>
+
+                      </div>
+                    </div>
+
                   </div>
-                </div>
+
+                  <!-- LOCKED REST (FIXED VERSION) -->
+                  <div class="locked-metrics">
+
+                    <div class="metric-card blurred" *ngFor="let m of reportAnalysisMap[r.id].metrics.slice(2, 6)">
+
+                      <div class="metric-header">
+                        <div class="metric-title">{{ m.name }}</div>
+                        <span class="metric-status" [ngClass]="m.status">
+                          {{ m.status | titlecase }}
+                        </span>
+                      </div>
+
+                      <div class="metric-info-card-inline">
+                        <div class="metric-stats">
+
+                          <div class="stat-box">
+                            <span class="label">Your Result</span>
+                            <span class="value">
+                              {{ m.value | number:'1.0-2' }} {{ m.unit }}
+                            </span>
+                          </div>
+
+                          <div class="stat-box">
+                            <span class="label">Normal Range</span>
+                            <span class="value">{{ m.range }}</span>
+                          </div>
+
+                        </div>
+                      </div>
+
+                    </div>
+                    <p class="hidden-count" *ngIf="reportAnalysisMap[r.id].metrics.length > 6">
+                      + {{ reportAnalysisMap[r.id].metrics.length - 6 }} more hidden
+                    </p>
+                    <!-- 🔥 Overlay centered on locked section -->
+                    <div class="blur-overlay">
+                      🔒 Upgrade to view full report
+                    </div>
+
+                  </div>
+
+                </ng-container>
 
               </div>
 
             </div>
-
           </div>
-
         </div>
       </div>
     </div>

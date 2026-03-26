@@ -356,6 +356,27 @@ export class AuthService {
             this.getAuthHeaders()
         );
     }
+    getUserPlanState(user) {
+        const isPremium = user.plan_type === 'premium';
 
+        const trialStart = new Date(user.trial_start);
+        const today = new Date();
+
+        trialStart.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const diff = Math.floor(
+            (today.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        const trialDaysLeft = Math.max(0, 7 - diff);
+        const isTrialActive = trialDaysLeft > 0;
+
+        // return { isPremium, isTrialActive, trialDaysLeft };
+        return {
+            isPremium: false,
+            isTrialActive: false,
+            trialDaysLeft: 0
+        };
+    }
 
 }
