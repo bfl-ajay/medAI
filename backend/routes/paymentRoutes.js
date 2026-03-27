@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const db = require('../db');
 const express = require("express");
 const crypto = require("crypto");
@@ -7,9 +8,26 @@ const authMiddleware = require('../middleware/authMiddleware');
 const MERCHANT_KEY = process.env.PAYU_KEY;
 const SALT = process.env.PAYU_SALT;
 
-//
-// 🚀 STEP 1: Generate PayU request + SAVE PENDING PAYMENT
-//
+cron.schedule('0 0 * * *', async () => {
+    try {
+        console.log("Running plan expiry check...");
+
+        await db.query(`
+            UPDATE users
+            SET plan_type = 'free'
+            WHERE plan_type = 'premium'
+            AND plan_expires <= NOW()
+        `);
+
+        console.log("Expired users downgraded");
+    } catch (err) {
+        console.error("Cron error:", err);
+    }
+});
+
+
+//  STEP 1: Generate PayU request + SAVE PENDING PAYMENT
+
 router.post("/pay", authMiddleware, async (req, res) => {
     try {
         const { amount, name, email } = req.body;

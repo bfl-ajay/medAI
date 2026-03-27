@@ -167,7 +167,7 @@ export class UploadReportsComponent {
 
       const result = { reportType, metrics };
 
-      // 🔥 STORE CACHE
+      // STORE CACHE
       this.cache.set(cacheKey, result);
 
       this.reportAnalysisMap[id] = result;
@@ -407,7 +407,7 @@ export class UploadReportsComponent {
       "cyanocobalamin": "Vitamin B12",
       "folate": "Folate",
 
-      // 🔥 ADD THESE
+      //  ADD THESE
       "wbc": "WBC Count",
       "wbc count": "WBC Count",
       "wbccount": "WBC Count",

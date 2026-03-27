@@ -340,7 +340,6 @@
     </div>
   </div>
 
-
   <!-- ================= PLAN PAGE ================= -->
 
   <div *ngIf="activeTab === 'plan'" class="profile-wrapper">
@@ -354,34 +353,87 @@
           <span class="plan-status-badge" [ngClass]="user?.plan_type === 'premium' ? 'premium' : 'free'">
             {{ user?.plan_type === 'premium' ? 'Premium' : 'Free' }}
           </span>
-
         </div>
 
         <div class="plan-body">
 
+          <!-- ACTIVE PLAN DETAILS -->
           <div *ngIf="user?.plan_type === 'premium'" class="plan-details">
             <p><strong>Expires:</strong> {{ planExpires ? (planExpires | date:'mediumDate') : 'Not available' }}</p>
             <p><strong>Days Left:</strong> {{ trialDaysLeft }}</p>
           </div>
-          <p *ngIf="isPremium && trialDaysLeft > 0" style="color: green;">
-            You already have an active plan
-          </p>
+
           <div *ngIf="user?.plan_type !== 'premium'" class="plan-details free">
             Limited access. Upgrade to unlock full features.
           </div>
 
+          <!-- STATUS MESSAGES -->
+          <p *ngIf="isPremium && trialDaysLeft > 0" class="plan-active">
+            You already have an active plan
+          </p>
+
+          <p *ngIf="isPremium && trialDaysLeft <= 5 && trialDaysLeft > 0" class="plan-warning">
+            ⚠️ Your plan expires soon
+          </p>
+
+          <!-- MAIN BUTTON -->
           <button class="upgrade-btn" (click)="payNow()" [disabled]="isPremium && trialDaysLeft > 0">
-            Upgrade ₹99
+
+            <ng-container *ngIf="!isPremium">Upgrade ₹99</ng-container>
+            <ng-container *ngIf="isPremium && trialDaysLeft <= 5">Renew Plan</ng-container>
+            <ng-container *ngIf="isPremium && trialDaysLeft > 5">Active Plan</ng-container>
 
           </button>
-
 
         </div>
       </div>
 
-      <!-- PAYMENT HISTORY CARD -->
-      <div class="plan-card">
+      <!-- ===== PLAN COMPARISON ===== -->
 
+      <div class="plan-comparison">
+
+        <!-- FREE PLAN -->
+        <div class="plan-box free">
+          <h3>Free Plan</h3>
+          <p class="price">₹0</p>
+
+          <ul>
+            <li>✔ Basic profile access</li>
+            <li>✔ Limited AI usage</li>
+            <li>❌ Full report history</li>
+            <li>❌ Advanced insights</li>
+          </ul>
+
+          <button class="plan-btn free-btn" disabled>
+            {{ user?.plan_type === 'free' ? 'Current Plan' : 'Free Plan' }}
+          </button>
+        </div>
+
+        <!-- PREMIUM PLAN -->
+        <div class="plan-box premium">
+          <h3>Premium Plan</h3>
+          <p class="price">₹99 / month</p>
+
+          <ul>
+            <li>✔ Unlimited AI analysis</li>
+            <li>✔ Full report access</li>
+            <li>✔ Advanced insights</li>
+            <li>✔ Priority features</li>
+          </ul>
+
+          <button class="plan-btn premium-btn" (click)="payNow()" [disabled]="isPremium && trialDaysLeft > 0">
+
+            <ng-container *ngIf="!isPremium">Upgrade</ng-container>
+            <ng-container *ngIf="isPremium && trialDaysLeft <= 5">Renew</ng-container>
+            <ng-container *ngIf="isPremium && trialDaysLeft > 5">Active</ng-container>
+
+          </button>
+        </div>
+
+      </div>
+
+      <!-- PAYMENT HISTORY (unchanged) -->
+      <div class="plan-card">
         <div class="plan-header">
           <h3>Payment History</h3>
         </div>
@@ -396,7 +448,7 @@
           Loading payments...
         </div>
 
-        <div class="payment-table-wrapper" *ngIf="!loadingPayments">
+        <div class="table-scroll-container" *ngIf="!loadingPayments">
 
           <table class="payment-table" *ngIf="paymentHistory.length > 0">
             <thead>
@@ -414,7 +466,15 @@
                 <td>₹{{ p.amount }}</td>
                 <td>
                   <span class="payment-badge" [ngClass]="p.status">
-                    {{ p.status }}
+                    <!-- SUCCESS -->
+                    <i *ngIf="p.status === 'success'" class="fa-solid fa-circle-check"></i>
+
+                    <!-- FAILURE -->
+                    <i *ngIf="p.status === 'failure'" class="fa-solid fa-circle-xmark"></i>
+
+                    <!-- OPTIONAL: PENDING -->
+                    <i *ngIf="p.status === 'pending'" class="fa-solid fa-clock"></i>
+
                   </span>
                 </td>
                 <td>{{ p.created_at | date:'medium' }}</td>
@@ -427,7 +487,6 @@
           </div>
 
         </div>
-
       </div>
 
     </div>
