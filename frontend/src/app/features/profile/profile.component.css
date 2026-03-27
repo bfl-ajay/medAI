@@ -804,6 +804,106 @@ input:disabled {
     color: #555;
 }
 
+/* ===== PLAN TAB ===== */
+
+.plan-card {
+    background: white;
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* HEADER */
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* STATUS BADGE */
+.plan-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.plan-status-badge.premium {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.plan-status-badge.free {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+/* BODY */
+.plan-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* DETAILS */
+.plan-details {
+    font-size: 14px;
+    color: #444;
+}
+
+.plan-details.free {
+    color: #e67e22;
+    font-weight: 500;
+}
+
+/* UPGRADE BUTTON (ENHANCED) */
+.upgrade-btn {
+    width: fit-content;
+    margin-top: 10px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(39,174,96,0.35);
+}
+
+/* PAYMENT CARD IMPROVEMENT */
+.payment-history {
+    margin-top: 0;
+    margin-left: 0;
+}
+
+/* FILTERS */
+.payment-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.payment-filters button {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #eef2f7;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.payment-filters button:hover {
+    background: #dbeafe;
+}
+
 /* ===== MOBILE RESPONSIVE ===== */
 
 @media (max-width:768px) {

@@ -13,6 +13,9 @@
       <p *ngIf="activeTab === 'security'">
         Manage your account security and privacy
       </p>
+      <p *ngIf="activeTab === 'plan'">
+        Manage your subscription and billing
+      </p>
     </div>
 
     <div class="page-hero-icon">
@@ -317,93 +320,6 @@
           </div>
         </div>
 
-        <!-- UPGRADE BUTTON -->
-        <div class="upgrade-row">
-          <div>
-            <strong>Upgrade to Premium</strong>
-            <div class="upgrade-sub">
-
-            </div>
-          </div>
-          <button class="upgrade-btn" (click)="payNow()" [disabled]="isPaying">
-            <ng-container *ngIf="!isPaying">
-              <i class="fa-solid fa-crown"></i> Upgrade ₹99
-            </ng-container>
-
-            <ng-container *ngIf="isPaying">
-              <i class="fa-solid fa-spinner fa-spin"></i> Processing...
-            </ng-container>
-          </button>
-
-          <div class="plan-info" *ngIf="user?.plan_type === 'premium'">
-            <div class="plan-badge">
-              👑 Premium Active
-            </div>
-            <div class="plan-expiry">
-              Expires on: {{ user?.plan_expires | date:'mediumDate' }}
-            </div>
-          </div>
-
-          <div class="plan-info free" *ngIf="user?.plan_type !== 'premium'">
-            ⚠️ You are on Free Plan
-          </div>
-          <div *ngIf="user?.plan_type === 'premium'">
-            {{ getDaysLeft() }} days left
-          </div>
-        </div>
-        <!-- PAYMENT HISTORY -->
-        <div class="payment-history">
-
-          <h4>Payment History</h4>
-
-          <!-- FILTERS -->
-          <div class="payment-filters">
-            <button (click)="selectedPaymentFilter='all'">All</button>
-            <button (click)="selectedPaymentFilter='success'">Success</button>
-            <button (click)="selectedPaymentFilter='failure'">Failed</button>
-          </div>
-
-          <!-- LOADING -->
-          <div *ngIf="loadingPayments" class="payment-loading">
-            Loading payments...
-          </div>
-
-          <!-- TABLE -->
-          <div class="payment-table-wrapper" *ngIf="!loadingPayments">
-
-            <table class="payment-table" *ngIf="paymentHistory.length > 0">
-              <thead>
-                <tr>
-                  <th>Txn ID</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr *ngFor="let p of getFilteredPayments()">
-                  <td>{{ p.txn_id }}</td>
-                  <td>₹{{ p.amount }}</td>
-                  <td>
-                    <span class="payment-badge" [ngClass]="p.status">
-                      {{ p.status }}
-                    </span>
-                  </td>
-                  <td>{{ p.created_at | date:'medium' }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- EMPTY -->
-            <div *ngIf="paymentHistory.length === 0" class="empty-payments">
-              No payments yet
-            </div>
-
-          </div>
-
-        </div>
-
         <!-- FOOTER ACTIONS -->
         <div class="security-footer">
           <div class="security-footer-inner">
@@ -421,5 +337,98 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ================= PLAN PAGE ================= -->
+
+  <div *ngIf="activeTab === 'plan'" class="profile-wrapper">
+    <div class="profile-content">
+
+      <!-- PLAN CARD -->
+      <div class="plan-card">
+
+        <div class="plan-header">
+          <h2>Subscription Plan</h2>
+          <span class="plan-status-badge" [ngClass]="user?.plan_type === 'premium' ? 'premium' : 'free'">
+            {{ user?.plan_type === 'premium' ? 'Premium' : 'Free' }}
+          </span>
+
+        </div>
+
+        <div class="plan-body">
+
+          <div *ngIf="user?.plan_type === 'premium'" class="plan-details">
+            <p><strong>Expires:</strong> {{ planExpires ? (planExpires | date:'mediumDate') : 'Not available' }}</p>
+            <p><strong>Days Left:</strong> {{ trialDaysLeft }}</p>
+          </div>
+          <p *ngIf="isPremium && trialDaysLeft > 0" style="color: green;">
+            You already have an active plan
+          </p>
+          <div *ngIf="user?.plan_type !== 'premium'" class="plan-details free">
+            Limited access. Upgrade to unlock full features.
+          </div>
+
+          <button class="upgrade-btn" (click)="payNow()" [disabled]="isPremium && trialDaysLeft > 0">
+            Upgrade ₹99
+
+          </button>
+
+
+        </div>
+      </div>
+
+      <!-- PAYMENT HISTORY CARD -->
+      <div class="plan-card">
+
+        <div class="plan-header">
+          <h3>Payment History</h3>
+        </div>
+
+        <div class="payment-filters">
+          <button (click)="selectedPaymentFilter='all'">All</button>
+          <button (click)="selectedPaymentFilter='success'">Success</button>
+          <button (click)="selectedPaymentFilter='failure'">Failed</button>
+        </div>
+
+        <div *ngIf="loadingPayments" class="payment-loading">
+          Loading payments...
+        </div>
+
+        <div class="payment-table-wrapper" *ngIf="!loadingPayments">
+
+          <table class="payment-table" *ngIf="paymentHistory.length > 0">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let p of getFilteredPayments()">
+                <td>{{ p.txn_id }}</td>
+                <td>₹{{ p.amount }}</td>
+                <td>
+                  <span class="payment-badge" [ngClass]="p.status">
+                    {{ p.status }}
+                  </span>
+                </td>
+                <td>{{ p.created_at | date:'medium' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="paymentHistory.length === 0" class="empty-payments">
+            No payments yet
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   </div>

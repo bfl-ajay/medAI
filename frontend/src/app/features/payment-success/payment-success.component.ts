@@ -50,7 +50,7 @@ export class PaymentSuccessComponent implements OnInit {
   // }
   goToSecurity() {
     this.router.navigate(['/profile'], {
-      queryParams: { tab: 'security' }
+      queryParams: { tab: 'plan' }
     });
 
   }

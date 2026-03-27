@@ -29,7 +29,7 @@ export class PaymentFailureComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/profile'], {
-      queryParams: { tab: 'security' }
+      queryParams: { tab: 'plan' }
     });
   }
 

@@ -39,7 +39,7 @@ export class ProfileComponent {
     selectedMonth: string = 'all';
     availableMonths: string[] = [];
     filteredBPRecords: any[] = [];
-    activeTab: 'personal' | 'security' = 'personal';
+    activeTab: 'personal' | 'security' | 'plan' = 'personal';
     emailOtp: string = '';
     phoneNumber: string = '';
     phoneOtp: string = '';
@@ -64,6 +64,7 @@ export class ProfileComponent {
     paymentHistory: any[] = [];
     loadingPayments = false;
     selectedPaymentFilter: string = 'all';
+    planExpires: any;
 
     get canAccessAI(): boolean {
         if (this.isPremium && this.user?.plan_expires) {
@@ -118,20 +119,26 @@ export class ProfileComponent {
         });
         this.route.queryParams.subscribe(params => {
 
-            if (params['tab'] === 'security') {
+            const tab = params['tab'];
+
+            if (tab === 'security') {
                 this.activeTab = 'security';
+            } else if (tab === 'plan') {
+                this.activeTab = 'plan';
             } else {
                 this.activeTab = 'personal';
             }
-
         });
         this.authService.getProfile().subscribe((res: any) => {
 
             this.profile = res;
             this.user = res;
             console.log("PROFILE DATA:", res);
+
             const plan = this.authService.getUserPlanState(res);
             this.knownDiseases = res.knownDiseases || [];
+            this.planExpires = res.plan_expires;
+
             this.isPremium = plan.isPremium;
             this.isTrialActive = plan.isTrialActive;
             this.trialDaysLeft = plan.trialDaysLeft;
@@ -175,15 +182,17 @@ export class ProfileComponent {
             this.extractMonths();
 
         });
-        if (this.activeTab === 'security') {
+        if (this.activeTab === 'plan') {
             this.getPaymentHistory();
         }
         this.route.queryParams.subscribe(params => {
-            if (params['tab'] === 'security') {
-                this.activeTab = 'security';
+            if (params['tab'] === 'plan') {
+                this.activeTab = 'plan';
                 this.getPaymentHistory();
             }
         });
+
+
 
     }
     saveProfile() {
@@ -889,10 +898,11 @@ export class ProfileComponent {
             p.status.toLowerCase() === this.selectedPaymentFilter
         );
     }
+    
     getDaysLeft(): number {
-        if (!this.user?.plan_expires) return 0;
+        if (!this.planExpires) return 0;
 
-        const expiry = new Date(this.user.plan_expires).getTime();
+        const expiry = new Date(this.planExpires).getTime();
         const now = new Date().getTime();
 
         return Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));

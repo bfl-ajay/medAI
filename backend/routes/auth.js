@@ -264,7 +264,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
                 two_factor_enabled,
                  recovery_email,
                  plan_type, 
-                 trial_start
+                 trial_start,
+                 plan_expires
             FROM users
             WHERE id = ?
         `;
@@ -355,6 +356,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             email_verified: user.email_verified,
             plan_type: user.plan_type,
             trial_start: user.trial_start,
+            plan_expires: user.plan_expires,
             photo: user.photo
                 ? `http://localhost:5000/uploads/profile/${user.photo}`
                 : null

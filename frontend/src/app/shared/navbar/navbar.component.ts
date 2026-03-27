@@ -167,4 +167,13 @@ export class NavbarComponent implements OnInit {
       queryParams: { tab: 'security' }
     });
   }
+
+  goToPlan() {
+  this.sidebarOpen = false;
+  this.menuOpen = false;
+
+  this.router.navigate(['/profile'], {
+    queryParams: { tab: 'plan' }
+  });
+}
 }

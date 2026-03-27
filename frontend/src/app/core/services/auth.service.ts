@@ -356,27 +356,51 @@ export class AuthService {
             this.getAuthHeaders()
         );
     }
-    getUserPlanState(user) {
-        const isPremium = user.plan_type === 'premium';
 
-        const trialStart = new Date(user.trial_start);
-        const today = new Date();
+    getUserPlanState(user: any) {
 
-        trialStart.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
+        const now = new Date();
 
-        const diff = Math.floor(
-            (today.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        const trialDaysLeft = Math.max(0, 7 - diff);
-        const isTrialActive = trialDaysLeft > 0;
+        // ✅ PREMIUM LOGIC FIRST
+        if (user.plan_type === 'premium' && user.plan_expires) {
 
-        return { isPremium, isTrialActive, trialDaysLeft };
-    //     return {
-    //         isPremium: false,
-    //         isTrialActive: false,
-    //         trialDaysLeft: 0
-    //     };
+            const expiry = new Date(user.plan_expires);
+            const diffDays = Math.ceil(
+                (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            return {
+                isPremium: expiry > now,
+                isTrialActive: false,
+                trialDaysLeft: Math.max(0, diffDays)
+            };
+        }
+
+        // 🟡 TRIAL LOGIC
+        if (user.trial_start) {
+            const trialStart = new Date(user.trial_start);
+            const diff = Math.floor((now.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
+            const trialDaysLeft = Math.max(0, 7 - diff);
+
+            return {
+                isPremium: false,
+                isTrialActive: trialDaysLeft > 0,
+                trialDaysLeft
+            };
+        }
+
+        return {
+            isPremium: false,
+            isTrialActive: false,
+            trialDaysLeft: 0
+           
+        }
+
     }
-
 }
+
+ //     return {
+            //         isPremium: false,
+            //         isTrialActive: false,
+            //         trialDaysLeft: 0
+            //     };

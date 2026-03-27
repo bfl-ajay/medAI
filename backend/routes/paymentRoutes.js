@@ -14,6 +14,34 @@ router.post("/pay", authMiddleware, async (req, res) => {
     try {
         const { amount, name, email } = req.body;
 
+        const [users] = await db.query(
+            `SELECT plan_type, plan_expires FROM users WHERE id = ?`,
+            [userId]
+        );
+
+        const user = users[0];
+
+        if (
+            user.plan_type === 'premium' &&
+            user.plan_expires &&
+            new Date(user.plan_expires) > new Date()
+        ) {
+            return res.status(400).json({
+                message: "You already have an active premium plan"
+            });
+        }
+        const [pending] = await db.query(
+            `SELECT id FROM payments 
+     WHERE user_id = ? AND status = 'pending'
+     LIMIT 1`,
+            [userId]
+        );
+
+        if (pending.length > 0) {
+            return res.status(400).json({
+                message: "Payment already in progress"
+            });
+        }
         const txnid = "txn_" + Date.now();
         const productinfo = "Health Report";
 
@@ -84,7 +112,7 @@ router.post('/success', async (req, res) => {
 
         if (!payments.length) {
             console.log("❌ Payment not found:", txnid);
-            return res.redirect(`http://localhost:4200/payment-failure`);
+            return res.redirect(`https://med-ai-f25g.vercel.app/payment-failure`);
         }
 
         const userId = payments[0].user_id;
