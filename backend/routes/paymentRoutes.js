@@ -29,7 +29,9 @@ cron.schedule('0 0 * * *', async () => {
 //  STEP 1: Generate PayU request + SAVE PENDING PAYMENT
 
 router.post("/pay", authMiddleware, async (req, res) => {
+
     try {
+        const userId = req.user.id;
         const { amount, name, email } = req.body;
 
         const [users] = await db.query(
@@ -56,9 +58,10 @@ router.post("/pay", authMiddleware, async (req, res) => {
         );
 
         if (pending.length > 0) {
-            return res.status(400).json({
-                message: "Payment already in progress"
-            });
+            await db.query(
+                `UPDATE payments SET status = 'failed' WHERE user_id = ? AND status = 'pending'`,
+                [userId]
+            );
         }
         const txnid = "txn_" + Date.now();
         const productinfo = "Health Report";
@@ -100,8 +103,8 @@ router.post("/pay", authMiddleware, async (req, res) => {
             phone: "9999999999",
             hash,
             action: "https://test.payu.in/_payment",
-            surl: "https://medai-production-371c.up.railway.app/api/payment/success",
-            furl: "https://medai-production-371c.up.railway.app/api/payment/failure",
+            surl: "http://localhost:5000/api/payment/success",
+            furl: "http://localhost:5000/api/payment/failure",
         });
 
     } catch (err) {
@@ -113,16 +116,17 @@ router.post("/pay", authMiddleware, async (req, res) => {
 //
 // ✅ STEP 2: SUCCESS CALLBACK
 //
-router.post('/success', async (req, res) => {
-    console.log("PayU SUCCESS:", req.body);
+router.all('/success', async (req, res) => {
+    console.log("PayU SUCCESS:", req.body, req.query);
 
-    const { status, txnid, amount } = req.body;
+    const data = req.method === 'POST' ? req.body : req.query;
+
+    const { status, txnid, amount } = data;
 
     const normalizedStatus = status?.toLowerCase() || 'success';
     const safeAmount = amount || 99;
 
     try {
-        // 🔍 GET USER FROM PAYMENT TABLE
         const [payments] = await db.query(
             `SELECT user_id FROM payments WHERE txn_id = ?`,
             [txnid]
@@ -130,12 +134,11 @@ router.post('/success', async (req, res) => {
 
         if (!payments.length) {
             console.log("❌ Payment not found:", txnid);
-            return res.redirect(`https://med-ai-f25g.vercel.app/payment-failure`);
+            return res.redirect(`http://localhost:4200/payment-failure`);
         }
 
         const userId = payments[0].user_id;
 
-        // 🔍 GET USER DATA
         const [users] = await db.query(
             `SELECT plan_expires FROM users WHERE id = ?`,
             [userId]
@@ -143,7 +146,6 @@ router.post('/success', async (req, res) => {
 
         const user = users[0];
 
-        // 🔄 UPDATE PAYMENT (NOT INSERT AGAIN)
         await db.query(
             `UPDATE payments 
              SET status = ?, amount = ?, raw_response = ?
@@ -151,14 +153,12 @@ router.post('/success', async (req, res) => {
             [
                 normalizedStatus,
                 safeAmount,
-                JSON.stringify(req.body),
+                JSON.stringify(data),
                 txnid
             ]
         );
 
-        // ✅ UPGRADE USER
         if (normalizedStatus === 'success') {
-
             let baseDate = new Date();
 
             if (user.plan_expires && new Date(user.plan_expires) > new Date()) {
@@ -166,8 +166,6 @@ router.post('/success', async (req, res) => {
             }
 
             baseDate.setDate(baseDate.getDate() + 30);
-
-            console.log("NEW EXPIRY:", baseDate);
 
             await db.query(
                 `UPDATE users 
@@ -181,13 +179,12 @@ router.post('/success', async (req, res) => {
         console.error("❌ SUCCESS DB ERROR:", err);
     }
 
-    res.redirect(`https://med-ai-f25g.vercel.app/payment-success?status=${status}&txnid=${txnid}&amount=${amount}`);
+    res.redirect(`http://localhost:4200/payment-success?status=${status}&txnid=${txnid}&amount=${amount}`);
 });
-
 //
 // ❌ STEP 3: FAILURE CALLBACK
 //
-router.post("/failure", async (req, res) => {
+router.all("/failure", async (req, res) => {
     console.log("PayU FAILURE:", req.body);
 
     const { status, txnid, amount } = req.body;
@@ -215,7 +212,7 @@ router.post("/failure", async (req, res) => {
         console.error("❌ FAILURE DB ERROR:", err);
     }
 
-    res.redirect(`https://med-ai-f25g.vercel.app/payment-failure?txnid=${txnid}&status=${normalizedStatus}`);
+    res.redirect(`http://localhost:4200/payment-failure?txnid=${txnid}&status=${normalizedStatus}`);
 });
 
 //

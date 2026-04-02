@@ -10,7 +10,7 @@ const app = express();
 
 app.use(cors({
     origin: [
-        'https://med-ai-f25g.vercel.app',
+        // 'https://med-ai-f25g.vercel.app',
         'http://localhost:4200',
         'http://localhost:5000'
     ],
