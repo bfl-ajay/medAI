@@ -845,7 +845,7 @@
   /* SERVICES */
 
   .services-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 25px;
   }
 
@@ -953,7 +953,7 @@
   /* 👉 2 CARDS PER ROW ON MOBILE */
 
   .services-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 18px;
   }
 
