@@ -84,6 +84,12 @@ export class DashboardComponent implements OnInit {
       }, 0);
 
     });
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (user.role === 'admin') {
+      this.router.navigate(['/admin']);
+    }
+
 
     this.loadBP();
     this.cache.getOrFetch<any[]>(

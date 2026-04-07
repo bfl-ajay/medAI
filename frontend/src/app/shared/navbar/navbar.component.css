@@ -733,3 +733,8 @@ body {
   color: #888;
   font-size: 13px;
 }
+
+.full-width {
+  margin-left: 0 !important;
+  width: 100% !important;
+}

@@ -59,21 +59,22 @@ export class VerifyOtpComponent {
         this.http.post<any>(`${environment.apiUrl}/api/auth/verify-login-otp`, {
             userId,
             otp
-        }).subscribe(res => {
+        }).subscribe((res: any) => {
 
             localStorage.setItem('token', res.token);
-
-            this.authService.getProfile().subscribe((user: any) => {
-
-                this.authService.setUser(user);   // 🔴 updates navbar instantly
-
+            this.authService.setUser(res.user);
+            if (res.user.role === 'admin') {
+                this.router.navigate(['/admin']);
+            } else {
                 this.router.navigate(['/dashboard']);
+            }
 
-            });
-
+        }, (err) => {
+            this.alert.error("Invalid OTP");
         });
 
     }
+
     resendOTP() {
 
         this.alert.success("OTP Resend Successfully");

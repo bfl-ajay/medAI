@@ -34,6 +34,7 @@ export class AuthService {
     }
 
     login(data: any) {
+        
         return this.http.post(`${this.apiUrl}/api/auth/login`, data);
     }
 
@@ -120,7 +121,7 @@ export class AuthService {
         return this.http.put(
             `${this.apiUrl}/api/auth/profile`,
             profile,
-            this.getAuthHeaders()
+            this.getAuthHeaders()  
         );
     }
 

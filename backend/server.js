@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const diseaseRoutes = require('./routes/diseaseRoutes');
 const paymentRoutes = require("./routes/paymentRoutes");
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -29,6 +30,8 @@ require('./db');
 app.use('/api/auth', authRoutes);
 app.use('/api/diseases', diseaseRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use('/api/admin', adminRoutes);
+
 app.get('/', (req, res) => {
     res.send('Welcome to the Health Adviser API');
 });

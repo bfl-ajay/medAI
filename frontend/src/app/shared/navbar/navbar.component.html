@@ -1,7 +1,7 @@
 <div class="main-layout" [class.sidebar-open]="sidebarOpen" *ngIf="isLoggedInUser; else notLoggedIn">
 
   <!-- SIDEBAR (Logged In Only) -->
-  <aside class="sidebar" [class.open]="sidebarOpen">
+  <aside class="sidebar" [class.open]="sidebarOpen" *ngIf="!isAdminRoute">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
       <div class="sidebar-logo"> <i class="fa-solid fa-staff-snake"></i></div>
@@ -65,7 +65,7 @@
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
 
   <!-- Main Content Area (Logged In) -->
-  <div class="main-content">
+  <div class="main-content" [class.full-width]="isAdminRoute">
     <!-- Mobile Top Bar -->
     <div class="mobile-top-bar">
       <!-- Mobile Hamburger Button -->
@@ -87,6 +87,7 @@
   </div>
 
 </div>
+
 
 <!-- NOT LOGGED IN NAVBAR -->
 <ng-template #notLoggedIn>
@@ -145,6 +146,11 @@
   <div class="" [class.show]="menuOpen" (click)="closeMenu()">
   </div>
 
+  <div *ngIf="user?.role === 'admin'">
+    <button (click)="router.navigate(['/admin'])">
+      Admin Panel
+    </button>
+  </div>
   <!-- Router Outlet for Public Pages -->
   <router-outlet></router-outlet>
 </ng-template>

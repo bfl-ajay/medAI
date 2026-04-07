@@ -47,17 +47,23 @@ export class LoginComponent {
 
           this.router.navigate(['/verify-otp']);
 
-          return; 
+          return;
         }
 
         // ✅ normal login
         localStorage.setItem('token', res.token);
+        this.authService.saveToken(res.token);
+        this.authService.setUser(res.user);
 
         this.authService.getProfile().subscribe((user: any) => {
 
           this.authService.setUser(user);
 
-          this.router.navigate(['/dashboard']);
+          if (res.user.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
 
         });
 

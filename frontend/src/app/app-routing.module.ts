@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes, ExtraOptions } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guards';
+import { RoleGuard } from './core/guards/role.guard';
 
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
+import { AdminDashboardComponent } from './features/dashboard/admin-dashboard/admin-dashboard.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 import { UploadReportsComponent } from './features/upload-reports/upload-reports.component';
@@ -19,6 +21,7 @@ import {PaymentSuccessComponent } from './features/payment-success/payment-succe
 const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'login', component: LoginComponent },
+    { path: 'admin', component: AdminDashboardComponent,  canActivate: [RoleGuard]},
     { path: 'register', component: RegisterComponent },
     { path: 'forgot-password', component: ForgotPasswordComponent },
     { path: 'verify-otp', component: VerifyOtpComponent },
@@ -37,8 +40,6 @@ const routerOptions: ExtraOptions = {
     scrollPositionRestoration: 'enabled',
     scrollOffset: [0, 72]
 };
-
-
 
 @NgModule({
     imports: [

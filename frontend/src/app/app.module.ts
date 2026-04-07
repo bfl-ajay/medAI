@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
+import { AdminDashboardComponent } from './features/dashboard/admin-dashboard/admin-dashboard.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
@@ -29,6 +30,7 @@ import { PaymentSuccessComponent } from './features/payment-success/payment-succ
         AppComponent,
         HomeComponent,
         LoginComponent,
+        AdminDashboardComponent,
         RegisterComponent,
         VerifyOtpComponent,
         DashboardComponent,
@@ -39,7 +41,8 @@ import { PaymentSuccessComponent } from './features/payment-success/payment-succ
         ProfileComponent,
         ForgotPasswordComponent,
         PaymentSuccessComponent,
-        PaymentFailureComponent
+        PaymentFailureComponent,
+
     ],
     imports: [
         BrowserModule,

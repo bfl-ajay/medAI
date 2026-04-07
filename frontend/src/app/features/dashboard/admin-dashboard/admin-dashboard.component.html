@@ -1,0 +1,214 @@
+<div class="admin-wrapper">
+    <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+
+        <button class="logout-btn mobile-footer" (click)="logout()">
+            Logout
+        </button>
+    </div>
+    <!-- 🔥 STATS -->
+    <div class="stats">
+        <div class="card">Users <span>{{stats.users}}</span></div>
+        <div class="card">Reports <span>{{stats.reports}}</span></div>
+        <div class="card">Prescriptions <span>{{stats.prescriptions}}</span></div>
+        <div class="card">Payments <span>{{stats.payments}}</span></div>
+    </div>
+
+    <div class="filter-bar">
+
+        <select [(ngModel)]="selectedUser" (change)="applyFilter()">
+            <option value="">All Users</option>
+            <option *ngFor="let u of users" [value]="u.name">
+                {{u.name}}
+            </option>
+        </select>
+
+        <button (click)="selectedUser=''; applyFilter()">
+            Clear
+        </button>
+
+    </div>
+
+    <!-- 👥 USERS -->
+    <div class="section">
+        <h2>Users</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let u of filteredUsers">
+                        <td>{{u.name}}</td>
+                        <td>{{u.email}}</td>
+                        <td>
+                            <span class="role" [class.admin]="u.role==='admin'">
+                                {{u.role}}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-delete" (click)="deleteUser(u.id)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--  PRESCRIPTIONS -->
+    <div class="section">
+        <h2>Prescriptions</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>File</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let p of filteredPrescriptions">
+                        <td>{{p.user_name}}</td>
+                        <td>{{p.file_name}}</td>
+                        <td>{{p.uploaded_at | date:'short'}}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--  PAYMENTS -->
+    <div class="section">
+        <h2>Payments</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let pay of filteredPayments">
+                        <td>{{pay.user_name}}</td>
+                        <td>₹{{pay.amount}}</td>
+                        <td>
+                            <span class="status" [class.success]="pay.status==='success'"
+                                [class.failed]="pay.status==='failed' || pay.status==='failure'">
+                                {{pay.status}}
+                            </span>
+                        </td>
+                        <td>{{pay.created_at | date:'short'}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Reports</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>File</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let r of filteredReports">
+                        <td>{{r.user_name}}</td>
+                        <td>{{r.file_name}}</td>
+                        <td>{{r.uploaded_at | date}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Blood Pressure Records</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Systolic</th>
+                        <th>Diastolic</th>
+                        <th>Pulse</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let b of filteredBP">
+                        <td>{{b.user_name}}</td>
+                        <td>{{b.systolic}}</td>
+                        <td>{{b.diastolic}}</td>
+                        <td>{{b.pulse}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Additional Info</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Allergies</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let a of filteredAdditional">
+                        <td>{{a.user_name}}</td>
+                        <td>{{a.allergies}}</td>
+                        <td>{{a.medical_notes}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Contact Messages</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let c of filteredContacts">
+                        <td>{{c.name}}</td>
+                        <td>{{c.email}}</td>
+                        <td>{{c.message}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

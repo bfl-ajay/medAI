@@ -15,6 +15,7 @@ export class NavbarComponent implements OnInit {
   user: any;
   isMobile = false;
   isLoggedInUser = false;
+  isAdminRoute = false;
 
   constructor(
     private router: Router,
@@ -27,6 +28,10 @@ export class NavbarComponent implements OnInit {
     this.authService.user$.subscribe(user => {
       this.user = user;
       this.updateLoginStatus();
+    });
+
+    this.router.events.subscribe(() => {
+      this.isAdminRoute = this.router.url.startsWith('/admin');
     });
 
     // Load user profile if not already loaded
@@ -169,11 +174,11 @@ export class NavbarComponent implements OnInit {
   }
 
   goToPlan() {
-  this.sidebarOpen = false;
-  this.menuOpen = false;
+    this.sidebarOpen = false;
+    this.menuOpen = false;
 
-  this.router.navigate(['/profile'], {
-    queryParams: { tab: 'plan' }
-  });
-}
+    this.router.navigate(['/profile'], {
+      queryParams: { tab: 'plan' }
+    });
+  }
 }

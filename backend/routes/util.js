@@ -11,7 +11,7 @@ const sendRecoveryEmailAdded = async (toEmail) => {
             html: `<h2>Recovery Email Added</h2>`
         });
 
-        console.log("RESEND RESPONSE:", response); // 👈 ADD THIS
+        console.log("RESEND RESPONSE:", response); 
 
     } catch (err) {
         console.error("Email error:", err);

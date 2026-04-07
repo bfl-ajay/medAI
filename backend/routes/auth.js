@@ -205,14 +205,20 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id },
+            { id: user.id, role: user.role }, //  ADD ROLE
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-
-
-        res.json({ token });
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role //  SEND ROLE
+            }
+        });
     } catch (err) {
         console.error("LOGIN ERROR:", err);
         res.status(500).json({ message: err.message });
@@ -239,13 +245,27 @@ router.post("/verify-login-otp", async (req, res) => {
         return res.status(400).json({ message: "Invalid OTP" });
     }
 
+    const [users] = await db.execute(
+        "SELECT id, name, email, role FROM users WHERE id=?",
+        [userId]
+    );
+    const user = users[0];
+    
     const token = jwt.sign(
-        { id: userId },
+        { id: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: '7d' }
     );
 
-    res.json({ token });
+    res.json({
+        token,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
+    });
 
 });
 
@@ -255,6 +275,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             SELECT 
                 name,
                 email,
+                role,
                 dob,
                 height,
                 weight,
@@ -342,6 +363,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
 
         res.json({
             name: user.name,
+            role: user.role,
             age,
             bmi,
             height: user.height,
@@ -379,7 +401,8 @@ router.put('/profile', authMiddleware, async (req, res) => {
             weight,
             bloodGroup,
             knownDiseases,
-            photo
+            photo,
+            role
         } = req.body;
 
         const sql = `
@@ -389,13 +412,15 @@ router.put('/profile', authMiddleware, async (req, res) => {
                 height = ?, 
                 weight = ?,  
                 bloodGroup = ?, 
-                known_diseases = ?
+                known_diseases = ?,
+                role
             WHERE id = ?
         `;
 
         await db.execute(sql, [
             name,
             email,
+            role,
             height || null,
             weight || null,
             bloodGroup || null,

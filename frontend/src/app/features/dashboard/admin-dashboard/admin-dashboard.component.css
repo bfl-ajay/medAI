@@ -1,0 +1,230 @@
+.admin-wrapper {
+    padding: 20px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+/* 🔥 STATS */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.card {
+    background: lightskyblue;
+    color: black;
+    padding: 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+}
+
+/* 📦 SECTION */
+.section {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 📊 TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    background: lightskyblue;
+    color: rgb(4, 4, 4);
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+        text-align: center;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: lightskyblue;
+    z-index: 2;
+}
+
+thead th {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.role.admin {
+    color: red;
+    font-weight: bold;
+}
+
+.status.success {
+    color: green;
+    font-weight: bold;
+}
+
+.status.failed {
+    color: red;
+    font-weight: bold;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filter-bar select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    min-width: 200px;
+    font-size: 14px;
+}
+
+.filter-bar button {
+    padding: 8px 14px;
+    background: #458FF6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-delete {
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logout-btn {
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.table-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+
+    .admin-wrapper {
+        padding: 10px;
+    }
+
+    /* 🔥 HEADER */
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .logout-btn {
+        width: 100%;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .card {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+
+    .card {
+        font-size: 14px;
+        padding: 15px;
+    }
+
+    /* 🔥 FILTER */
+    .filter-bar {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .filter-bar select,
+    .filter-bar button {
+        width: 100%;
+    }
+
+    /* 🔥 TABLE FIX */
+    .table-container {
+        overflow-x: auto;
+        /* 👉 horizontal scroll */
+        overflow-y: auto;
+    }
+
+    table {
+        min-width: 600px;
+        /* 👈 forces scroll instead of breaking layout */
+    }
+
+    th,
+    td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    /* 🔥 BUTTONS */
+    .btn-delete {
+        width: 100%;
+        padding: 8px;
+    }
+
+    /* 🔥 SECTION SPACING */
+    .section {
+        padding: 10px;
+    }
+
+     .mobile-footer {
+        position: fixed;   /* 🔥 stick to screen */
+        bottom: 0;
+        left: 0;
+        width: 100%;
+
+        border-radius: 0;  /* flat like footer */
+        padding: 14px;
+
+        z-index: 1000;
+    }
+
+    /* Add space so content is not hidden behind button */
+    .admin-wrapper {
+        padding-bottom: 70px;
+    }
+}
